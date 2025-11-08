@@ -1,0 +1,30 @@
+projects:
+  - name: Budget Planner
+    environments:
+      - name: Dev
+        services:
+          - type: web
+            plan: free
+            name: budget-planner-backend-dev
+            runtime: python
+            repo: https://github.com/skrypty-planer/planer
+            branch: main
+            buildCommand: pip install -r backend/requirements.txt
+            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
+            healthCheckPath: /health
+            envVars:
+              - key: PYTHON_VERSION
+                value: 3.14.0
+              - key: CORS_ALLOW_ALL
+                value: "true"
+
+          - type: web
+            name: budget-planner-frontend-dev
+            runtime: static
+            repo: https://github.com/Eseriol/testAppSt
+            branch: main
+            buildCommand: cd frontend && npm install && npm run build
+            staticPublishPath: frontend/dist
+            # envVars:
+            #   - key: VITE_API_BASE_URL_DEV
+            #     value: https://<backend-dev-host>
