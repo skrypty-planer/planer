@@ -23,7 +23,7 @@ def get_transactions():
             'status_code': ex.status_code
         })
 
-@bp.route('/transactions/filter', methods=["GET"])
+@bp.route('/filter', methods=["GET"])
 def filter_transactions():
     user_id = None  # TODO
     filters = {
