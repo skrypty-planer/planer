@@ -16,4 +16,5 @@ pip install --upgrade pip >/dev/null
 pip install -r "$BACKEND_DIR/requirements.txt"
 
 export PYTHONPATH="$PROJECT_ROOT"
-pytest -q backend/tests
+echo "PYTHONPATH set to $PYTHONPATH"
+pytest backend/tests
