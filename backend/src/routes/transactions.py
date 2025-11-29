@@ -23,6 +23,32 @@ def get_transactions():
             'status_code': ex.status_code
         })
 
+@bp.route('/transactions/filter', methods=["GET"])
+def filter_transactions():
+    user_id = None  # TODO
+    filters = {
+        "date_from": request.args.get("date_from"),
+        "date_to": request.args.get("date_to"),
+        "category": request.args.get("category"),
+        "description": request.args.get("description"),
+        "amount_min": request.args.get("amount_min"),
+        "amount_max": request.args.get("amount_max")
+    }
+
+    try:
+        transactions = TxSvc.filter_transactions(user_id, **filters)
+        logger.info('Filter transactions successful.')
+        return jsonify({
+            'transactions': transactions,
+            'status_code': HTTP_STATUS_CODE.OK
+        })
+    except INTERNAL_ERROR_EXCEPTION as ex:
+        logger.error(ex.error)
+        return jsonify({
+            'message': ex.error,
+            'status_code': ex.status_code
+        })
+
 @bp.route('/store', methods=["POST"])
 def add_transaction():
     user_id = None  # TODO
