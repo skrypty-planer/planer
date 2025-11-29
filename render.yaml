@@ -18,13 +18,13 @@ projects:
               - key: CORS_ALLOW_ALL
                 value: "true"
 
-          - type: web
-            name: budget-planner-frontend-dev
-            runtime: static
-            repo: https://github.com/skrypty-planer/planer
-            branch: introduce-ops
-            buildCommand: cd frontend && npm install && npm run build
-            staticPublishPath: frontend/dist
-            # envVars:
-            #   - key: VITE_API_BASE_URL_DEV
-            #     value: https://<backend-dev-host>
+          # - type: web
+          #   name: budget-planner-frontend-dev
+          #   runtime: static
+          #   repo: https://github.com/skrypty-planer/planer
+          #   branch: introduce-ops
+          #   buildCommand: cd frontend && npm install && npm run build
+          #   staticPublishPath: frontend/dist
+          #   # envVars:
+          #   #   - key: VITE_API_BASE_URL_DEV
+          #   #     value: https://<backend-dev-host>
