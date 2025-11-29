@@ -1,9 +1,5 @@
-from global_utils import singleton
+from .Singleton import Singleton
 
-@singleton
-class CacheManager():
-    def __init__(self):
-        self.initialized = True
-    
-    def get_user_by_id(user_id):
+class CacheManager(metaclass=Singleton):
+    def get_user_by_id(self, user_id):
         pass

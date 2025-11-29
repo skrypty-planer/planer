@@ -37,4 +37,11 @@ def create_app(test_config=None):
     
     logger.info('Registered blueprints.')
     
+    from .utilities.AuthManager import AuthManager
+    from .utilities.CacheManager import CacheManager
+    app.AuthManager = AuthManager()
+    app.CacheManager = CacheManager()
+    
+    logger.info('Created singleton managers')
+    
     return app

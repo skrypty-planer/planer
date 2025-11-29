@@ -1,12 +1,8 @@
-from global_utils import singleton
+from .Singleton import Singleton
 
-@singleton
-class AuthManager():
-    def __init__(self):
-        self.initialized = True
-    
-    def check_if_user_is_logged_in(username):
+class AuthManager(metaclass=Singleton):
+    def check_if_user_is_logged_in(self, username):
         pass
 
-    def create_user(username, password):
+    def create_user(self, username, password):
         pass
