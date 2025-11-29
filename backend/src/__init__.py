@@ -32,15 +32,18 @@ def create_app(test_config=None):
     cache = Cache(app)
     logger.info('Cache created.')
     
-    from .routes import auth
+    from .routes import auth, transaction
     app.register_blueprint(auth.bp)
+    app.register_blueprint(transaction.bp)
     
     logger.info('Registered blueprints.')
     
     from .utilities.AuthManager import AuthManager
     from .utilities.CacheManager import CacheManager
+    from .utilities.TransactionManager import TransactionManager
     app.AuthManager = AuthManager()
     app.CacheManager = CacheManager()
+    app.TransactionManager = TransactionManager()
     
     logger.info('Created singleton managers')
     
