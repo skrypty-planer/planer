@@ -17,4 +17,4 @@ pip install -r "$BACKEND_DIR/requirements.txt"
 
 export PYTHONPATH="$PROJECT_ROOT"
 echo "PYTHONPATH set to $PYTHONPATH"
-pytest backend/tests
+pytest $PYTHONPATH/backend/tests
