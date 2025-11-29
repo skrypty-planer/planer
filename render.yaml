@@ -10,7 +10,7 @@ projects:
             repo: https://github.com/skrypty-planer/planer
             branch: introduce-ops
             buildCommand: pip install -r backend/requirements.txt
-            startCommand: gunicorn -w 2 -b 0.0.0.0:5000 backend.app:app
+            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.src.app:app
             healthCheckPath: /health
             envVars:
               - key: PYTHON_VERSION
@@ -22,7 +22,7 @@ projects:
             name: budget-planner-frontend-dev
             runtime: static
             repo: https://github.com/skrypty-planer/planer
-            branch: main
+            branch: introduce-ops
             buildCommand: cd frontend && npm install && npm run build
             staticPublishPath: frontend/dist
             # envVars:
