@@ -2,8 +2,6 @@
 and tells python that src directory
 should be treated as a package
 """
-import os
-
 from flask import Flask
 from flask_caching import Cache
 
@@ -30,12 +28,6 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
-    
-    # ensure the instance config folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
     
     cache = Cache(app)
     logger.info('Cache created.')
