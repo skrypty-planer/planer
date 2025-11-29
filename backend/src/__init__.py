@@ -40,9 +40,10 @@ def create_app(test_config=None):
     cache = Cache(app)
     logger.info('Cache created.')
     
-    from .routes import auth
+    from .routes import auth, transactions
     app.register_blueprint(auth.bp)
-    
+    app.register_blueprint(transactions.bp)
+
     logger.info('Registered blueprints.')
     
     return app
