@@ -8,9 +8,9 @@ projects:
             name: budget-planner-backend-dev
             runtime: python
             repo: https://github.com/skrypty-planer/planer
-            branch: main
+            branch: introduce-ops
             buildCommand: pip install -r backend/requirements.txt
-            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
+            startCommand: gunicorn -w 2 -b 0.0.0.0:5000 backend.app:app
             healthCheckPath: /health
             envVars:
               - key: PYTHON_VERSION
