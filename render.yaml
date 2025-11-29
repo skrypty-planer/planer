@@ -21,7 +21,7 @@ projects:
           - type: web
             name: budget-planner-frontend-dev
             runtime: static
-            repo: https://github.com/Eseriol/testAppSt
+            repo: https://github.com/skrypty-planer/planer
             branch: main
             buildCommand: cd frontend && npm install && npm run build
             staticPublishPath: frontend/dist
