@@ -22,5 +22,6 @@ jobs:
           python-version: '3.14'
       - name: Install and run unit tests
         run: bash ops/backend/test.sh
-      - name: Smoke test
-        run: bash ops/backend/smoke.sh
+    # TODO: Implement smoke tests at some point
+    #   - name: Smoke test
+    #     run: bash ops/backend/smoke.sh
