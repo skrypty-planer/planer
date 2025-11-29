@@ -1,0 +1,114 @@
+/* Globalny plik CSS – prosty test i layout bazowy */
+:root {
+    --bg: #ffffff;
+    --text: #222;
+    --muted: #666;
+    --primary: #2962ff;
+    --primary-weak: #e3f2fd;
+    --success: #2e7d32;
+    --danger: #c62828;
+    --card: #fff;
+    --border: #e0e0e0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    color: var(--text);
+    background: #f5f7fb;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+}
+
+.grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.kafel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fff;
+}
+
+.kafel--active {
+    border-color: var(--primary);
+    background: var(--primary-weak);
+}
+
+.caption {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    border-bottom: 1px solid var(--border);
+    padding: .6rem .4rem;
+    text-align: left;
+}
+
+.table th {
+    font-weight: 500;
+    color: #444;
+}
+
+.badge {
+    display: inline-block;
+    padding: .2rem .5rem;
+    border-radius: 999px;
+    font-size: .85rem;
+    border: 1px solid var(--border);
+}
+
+.badge--income {
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.badge--expense {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.footer {
+    margin-top: auto;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background: #fff;
+}
