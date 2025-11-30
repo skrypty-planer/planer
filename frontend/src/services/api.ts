@@ -1,19 +1,35 @@
-// Symulacja backendu – wszystkie funkcje zwracają docelowy format danych.
-// Docelowo podmień implementację na fetch(`${base}/api/...`) bez zmian w komponentach.
+export interface DashboardSummary {
+    incomeDaily: number;
+    expenseDaily: number;
+    balanceDaily: number;
+    incomeMonthly: number;
+    expenseMonthly: number;
+    balanceMonthly: number;
+}
 
 export interface Transaction {
     id: string;
     name: string;
     amount: number;
-    category: string;
-    type: 'income' | 'expense';
     date: string;
+    type: 'income' | 'expense';
+    category: string;
 }
 
-export interface DashboardSummary {
-    incomeDaily: number;
-    expenseDaily: number;
-    balanceDaily: number;
+export interface TransactionFilter {
+    dateFrom?: string;
+    dateTo?: string;
+    name?: string;
+    amount?: number;
+    category?: string;
+    type?: 'income' | 'expense';
+    sort?: string;
+}
+
+export interface CategoryBreakdown {
+    category: string;
+    amount: number;
+    percentage: number;
 }
 
 export interface ChartData {
@@ -39,8 +55,17 @@ export interface ChartsResponse {
 const CATEGORIES_INCOME = ['Pensja', 'Premia', 'Zwrot podatku', 'Sprzedaż'];
 const CATEGORIES_EXPENSE = ['Jedzenie', 'Mieszkanie', 'Transport', 'Zdrowie', 'Rozrywka', 'Subskrypcje'];
 
-const DESCRIPTIVE_NAMES_INCOME = ['Wypłata wynagrodzenia', 'Premia kwartalna', 'Zwrot z urzędu skarbowego', 'Sprzedaż starego roweru', 'Odsetki z lokaty'];
-const DESCRIPTIVE_NAMES_EXPENSE = ['Zakupy Tesco', 'Wizyta u Dentysty', 'Paliwo Orlen', 'Czynsz za mieszkanie', 'Abonament Netflix', 'Bilet do kina', 'Kawa Starbucks', 'Uber Eats'];
+const DESCRIPTIVE_NAMES_INCOME = [
+    'Wypłata wynagrodzenia', 'Premia kwartalna', 'Zwrot z urzędu skarbowego', 'Sprzedaż starego roweru',
+    'Odsetki z lokaty', 'Zwrot za paliwo', 'Dodatek stażowy', 'Prezent urodzinowy', 'Zlecenie freelance',
+    'Sprzedaż na Vinted', 'Zwrot kaucji', 'Nagroda roczna'
+];
+const DESCRIPTIVE_NAMES_EXPENSE = [
+    'Zakupy Tesco', 'Wizyta u Dentysty', 'Paliwo Orlen', 'Czynsz za mieszkanie', 'Abonament Netflix',
+    'Bilet do kina', 'Kawa Starbucks', 'Uber Eats', 'Zakupy Biedronka', 'Opłata za prąd',
+    'Internet UPC', 'Siłownia karnet', 'Prezent dla mamy', 'Naprawa samochodu', 'Fryzjer',
+    'Książki Empik', 'Spotify Premium', 'Pizza Dominos', 'Bilet miesięczny', 'Apteka leki'
+];
 
 function rand(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -107,15 +132,25 @@ function ensureUserData(userId: string) {
 export async function getDashboardSummary(userId: string): Promise<DashboardSummary> {
     const { transactions } = ensureUserData(userId);
     const today = formatDate(new Date());
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayStr = formatDate(firstDayOfMonth);
+
     const todayTx = transactions.filter(t => t.date === today);
-    const income = todayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-    const expense = todayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-    const balance = income - expense;
+    const monthTx = transactions.filter(t => t.date >= firstDayStr && t.date <= today);
+
+    const incomeDaily = todayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expenseDaily = todayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const incomeMonthly = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expenseMonthly = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
     return {
-        incomeDaily: income,
-        expenseDaily: expense,
-        balanceDaily: balance
+        incomeDaily,
+        expenseDaily,
+        balanceDaily: incomeDaily - expenseDaily,
+        incomeMonthly,
+        expenseMonthly,
+        balanceMonthly: incomeMonthly - expenseMonthly
     };
 }
 
@@ -132,28 +167,49 @@ export async function getAllTransactions(userId: string, filters: any = {}): Pro
         dateFrom,
         dateTo,
         name,
-        amount,
+        amountMin,
+        amountMax,
         category,
-        type, // 'income' | 'expense' | undefined
+        type,
     } = filters;
 
     let out = [...transactions];
+
+    // Apply all filters
     if (dateFrom) out = out.filter(t => t.date >= dateFrom);
     if (dateTo) out = out.filter(t => t.date <= dateTo);
-    if (name) out = out.filter(t => t.name.toLowerCase().includes(String(name).toLowerCase()));
-    if (typeof amount === 'number') out = out.filter(t => t.amount === amount);
+    if (name) out = out.filter(t => t.name.toLowerCase().includes(name.toLowerCase()));
+    if (amountMin !== undefined) out = out.filter(t => t.amount >= amountMin);
+    if (amountMax !== undefined) out = out.filter(t => t.amount <= amountMax);
     if (category) out = out.filter(t => t.category === category);
     if (type) out = out.filter(t => t.type === type);
 
+    // Sorting
+    if (filters.sort) {
+        switch (filters.sort) {
+            case 'amount-asc':
+                out.sort((a, b) => a.amount - b.amount);
+                break;
+            case 'amount-desc':
+                out.sort((a, b) => b.amount - a.amount);
+                break;
+            case 'date-asc':
+                out.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                break;
+            case 'date-desc':
+                out.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                break;
+        }
+    } else {
+        // Default sort by date desc
+        out.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+
     return {
         items: out,
-        meta: {
-            total: out.length
-        }
+        meta: { total: out.length }
     };
 }
-
-// CHARTS DATA
 export async function getCharts(userId: string): Promise<ChartsResponse> {
     // Ostatnie 30 dni – słupki przychodów i wydatków
     const days = lastNDays(30);
@@ -212,6 +268,90 @@ export async function getCharts(userId: string): Promise<ChartsResponse> {
         averages: { avgDailyIncome, avgDailyExpense },
         ranking: rankingCategories
     };
+}
+
+// ADD TRANSACTION
+export async function addTransaction(userId: string, transaction: Omit<Transaction, 'id'>): Promise<Transaction> {
+    const { transactions } = ensureUserData(userId);
+    const newTransaction: Transaction = {
+        ...transaction,
+        id: `${userId}-${Date.now()}`
+    };
+    transactions.unshift(newTransaction);
+    return newTransaction;
+}
+
+// UPDATE TRANSACTION
+export async function updateTransaction(userId: string, transactionId: string, updates: Partial<Transaction>): Promise<Transaction | null> {
+    const { transactions } = ensureUserData(userId);
+    const index = transactions.findIndex(t => t.id === transactionId);
+    if (index === -1) return null;
+
+    transactions[index] = { ...transactions[index], ...updates };
+    return transactions[index];
+}
+
+// DELETE TRANSACTION
+export async function deleteTransaction(userId: string, transactionId: string): Promise<boolean> {
+    const data = CACHE.get(userId);
+    if (!data) return false;
+
+    const index = data.transactions.findIndex(t => t.id === transactionId);
+    if (index === -1) return false;
+
+    data.transactions.splice(index, 1);
+    return true;
+}
+
+// CATEGORY BREAKDOWN FOR PIE CHARTS
+export async function getCategoryBreakdown(
+    userId: string,
+    type: 'income' | 'expense',
+    period: 'yearly' | 'halfYearly' | 'quarterly' | 'monthly' | 'weekly'
+): Promise<CategoryBreakdown[]> {
+    const { transactions } = ensureUserData(userId);
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+        case 'yearly':
+            startDate = new Date(now.getFullYear(), 0, 1);
+            break;
+        case 'halfYearly':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+            break;
+        case 'quarterly':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            break;
+        case 'monthly':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+        case 'weekly':
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            break;
+    }
+
+    const startDateStr = formatDate(startDate);
+    const endDateStr = formatDate(now);
+
+    const filteredTx = transactions.filter(
+        t => t.type === type && t.date >= startDateStr && t.date <= endDateStr
+    );
+
+    const categoryTotals: Record<string, number> = {};
+    filteredTx.forEach(t => {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+    });
+
+    const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
+
+    return Object.entries(categoryTotals)
+        .map(([category, amount]) => ({
+            category,
+            amount,
+            percentage: total > 0 ? Math.round((amount / total) * 100) : 0
+        }))
+        .sort((a, b) => b.amount - a.amount);
 }
 
 export const meta = {
