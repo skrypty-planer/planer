@@ -148,10 +148,10 @@ async function handleSave() {
 
   if (formData.value.password.trim()) {
     // Check if password is the same as current
-    if (formData.value.password === props.user.password) {
-      errors.value.password = 'Nowe hasło jest takie samo jak obecne'
-      return
-    }
+    // if (formData.value.password === props.user.password) {
+    //   errors.value.password = 'Nowe hasło jest takie samo jak obecne'
+    //   return
+    // }
     updates.password = formData.value.password
   }
 
