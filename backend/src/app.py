@@ -18,15 +18,7 @@ def create_app(test_config=None):
 
     # set up flask.session
     app.config["SECRET_KEY"] = "super-secret-key"  # lazy - "good enough for now"
-    app.config["SESSION_COOKIE_HTTPONLY"] = True
-    
-    # Enable CORS
-    # Allow credentials to support sessions
-    # Explicitly allow localhost:5173 (frontend)
-    if cfg.cors_allow_all:
-        CORS(app)
-    else:
-        CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
+    app.config["SESSION_COOKIE_HTTPONLY"] = True   
 
     logger.info('App created.')
 
@@ -38,6 +30,10 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
+    if app.config.cors_allow_all:
+        CORS(app)
+    else:
+        CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
 
     cache = Cache(app)
     cache.set("users", dict())
