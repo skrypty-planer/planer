@@ -32,11 +32,18 @@ def create_app(test_config=None):
         app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
     
-    cors_allow_all: bool = os.getenv("CORS_ALLOW_ALL", "true").lower() == "true"
-    if cors_allow_all:
-        CORS(app)
-    else:
-        CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/*": {
+                "origins": [
+                    "https://budget-planner-frontend-dev-jmhj.onrender.com",
+                    "http://localhost:5173",
+                ]
+            }
+        }
+    )
 
     cache = Cache(app)
     cache.set("users", dict())
