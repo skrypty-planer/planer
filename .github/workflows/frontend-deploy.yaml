@@ -1,0 +1,20 @@
+name: Frontend Deploy
+
+on:
+  push:
+    branches: [main ]
+    paths:
+      - 'frontend/**'
+      - 'ops/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger DEV deploy
+        env:
+          RENDER_FRONTEND_DEV_HOOK: ${{ secrets.RENDER_FRONTEND_DEV_HOOK }}
+        run: bash ops/frontend/deploy.sh
+
