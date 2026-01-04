@@ -12,5 +12,5 @@ from ..src.utilities.global_utils import check_if_data_is_not_None
 def test_check_if_data_is_not_None(client, data):
     try:
         check_if_data_is_not_None(data)
-    except:
-        raise Exception
+    except Exception as ex:
+        raise ex

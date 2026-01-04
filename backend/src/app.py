@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from flask_caching import Cache
 
-from .config import Config, DevelopmentConfig
+from .config import DevelopmentConfig
 
 def create_app(test_config=None):
     # configure logger
@@ -30,26 +30,30 @@ def create_app(test_config=None):
         app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
 
-    # ensure the instance config folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
     cache = Cache(app)
     logger.info('Cache created.')
 
-    from .routes import auth, transactions
+    from .routes import auth, transactions, health
     app.register_blueprint(auth.bp)
     app.register_blueprint(transactions.bp)
+    app.register_blueprint(health.bp)
 
     logger.info('Registered blueprints.')
+
+    from .utilities.AuthManager import AuthManager
+    from .utilities.CacheManager import CacheManager
+    from .utilities.TransactionManager import TransactionManager
+    AuthManager()
+    CacheManager(cache)
+    TransactionManager()
+    
+    logger.info('Created singleton objects.')
 
     return app
 
 
 app = create_app()
 if __name__ == '__main__':
-    cfg = Config.get_instance()
+    cfg = DevelopmentConfig()
     port = int(os.getenv("PORT", cfg.port))
     app.run(host=cfg.host, port=port, debug=cfg.debug)

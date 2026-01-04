@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, session
 from ..error_handling.logger import logger
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, UNAUTHORIZED_EXCEPTION, HTTP_STATUS_CODE
 from ..utilities.global_utils import check_if_data_is_not_None
+from ..utilities.AuthManager import AuthManager
+from ..utilities.CacheManager import CacheManager
 
 bp = Blueprint('/auth', __name__, url_prefix='/auth')
 
@@ -10,12 +12,12 @@ def login():
     username = request.json['username']
     password = request.json['password']
     
-    auth = current_app.AuthManager
+    auth = AuthManager()
     
     try:
         check_if_data_is_not_None([username, password])
-        check_if_user_is_logged_in(username)
-        user_id = create_user(username, password)
+        auth.check_if_user_is_logged_in(username)
+        user_id = auth.create_user(username, password)
 
         session['user_id'] = user_id  # save current user's user_id to session for further use
 
@@ -36,13 +38,13 @@ def login():
 def me():
     user_id = request.json['user_id']
     
-    auth = current_app.AuthManager
-    cache = current_app.CacheManager
+    auth = AuthManager()
+    cache = CacheManager()
     
     try:
         check_if_data_is_not_None([user_id])
         user = cache.get_user_by_id(user_id)
-        # auth.check_if_user_is_logged_in(user.username)
+        auth.check_if_user_is_logged_in(user.username)
         return jsonify({
             'user_id': user_id,
             'user': user,
