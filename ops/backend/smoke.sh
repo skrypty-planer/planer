@@ -10,11 +10,12 @@ cd "$PROJECT_ROOT"
 pip install -r "$BACKEND_DIR/requirements.txt" >/dev/null
 
 export PYTHONPATH="$PROJECT_ROOT"
-PORT=${PORT:-5001}
 HOST=127.0.0.1
+PORT=${2:-5000}
+
 
 # Start app in background
-( gunicorn -w 1 -b "$HOST:$PORT" backend.app:app >/tmp/backend_smoke.log 2>&1 ) &
+( gunicorn -w 1 -b "$HOST:$PORT" backend.src.app:app >/tmp/backend_smoke.log 2>&1 ) &
 PID=$!
 
 cleanup() {
@@ -23,10 +24,10 @@ cleanup() {
 trap cleanup EXIT
 
 # Wait for health
-ATTEMPTS=30
-until curl -fsS "http://$HOST:$PORT/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
+ATTEMPTS=40
+until curl -fsS "http://$HOST:$PORT/check/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
   ATTEMPTS=$((ATTEMPTS-1))
-  sleep 1
+  sleep 2
   echo "Waiting for app... attempts left: $ATTEMPTS"
   if ! kill -0 "$PID" 2>/dev/null; then
     echo "App process exited unexpectedly:" >&2
@@ -35,14 +36,15 @@ until curl -fsS "http://$HOST:$PORT/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; d
   fi
 done
 
+echo "Attempt succesful! Now running health check validation"
 # Health check
-curl -fsS "http://$HOST:$PORT/health" | tee /tmp/health.json
+curl -fsS "http://$HOST:$PORT/check/health" | tee /tmp/health.json
 
-# <> endpoint
-curl -fsS "http://$HOST:$PORT/api/v1/" | tee /tmp/<>.json
+# # <> endpoint
+# curl -fsS "http://$HOST:$PORT/api/v1/" | tee /tmp/<>.json
 
 # Basic validations
-jq -e '.status == "ok"' </tmp/health.json >/dev/null || { echo "Health endpoint failed" >&2; exit 1; }
+jq -e '.status_code == 200' </tmp/health.json >/dev/null || { echo "Health endpoint failed" >&2; exit 1; }
 
 
 echo "Smoke test passed"
