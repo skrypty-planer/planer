@@ -1,6 +1,11 @@
 name: Backend Deploy (manual)
 
 on:
+  push:
+    branches: [main ]
+    paths:
+      - 'backend/**'
+      - 'ops/**'
   workflow_dispatch:
 
 jobs:
