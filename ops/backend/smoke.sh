@@ -43,7 +43,7 @@ curl -fsS "http://$HOST:$PORT/check/health" | tee /tmp/health.json
 # curl -fsS "http://$HOST:$PORT/api/v1/" | tee /tmp/<>.json
 
 # Basic validations
-jq -e '.status_code == "200"' </tmp/health.json >/dev/null || { echo "Health endpoint failed" >&2; exit 1; }
+jq -e '.status_code == 200' </tmp/health.json >/dev/null || { echo "Health endpoint failed" >&2; exit 1; }
 
 
 echo "Smoke test passed"
