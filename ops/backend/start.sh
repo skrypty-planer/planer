@@ -26,4 +26,4 @@ cd "$PROJECT_ROOT"
 # Default workers: 2, can be overridden by env GUNICORN_WORKERS
 WORKERS=${GUNICORN_WORKERS:-2}
 
-exec gunicorn -w "$WORKERS" -b "$HOST:$PORT" backend.src.app
+exec gunicorn -w "$WORKERS" -b "$HOST:$PORT" backend.src.app:app
