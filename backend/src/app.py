@@ -23,7 +23,10 @@ def create_app(test_config=None):
     # Enable CORS
     # Allow credentials to support sessions
     # Explicitly allow localhost:5173 (frontend)
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
+    if cfg.cors_allow_all:
+        CORS(app)
+    else:
+        CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
 
     logger.info('App created.')
 
