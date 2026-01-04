@@ -1,0 +1,14 @@
+name: Backend Deploy (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger DEV deploy
+        env:
+          RENDER_BACKEND_DEV_HOOK: ${{ secrets.RENDER_BACKEND_DEV_HOOK }}
+        run: bash ops/backend/deploy.sh
