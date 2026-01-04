@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_caching import Cache
+from flask_cors import CORS
 
 from .config import DevelopmentConfig
 
@@ -18,6 +19,11 @@ def create_app(test_config=None):
     # set up flask.session
     app.config["SECRET_KEY"] = "super-secret-key"  # lazy - "good enough for now"
     app.config["SESSION_COOKIE_HTTPONLY"] = True
+    
+    # Enable CORS
+    # Allow credentials to support sessions
+    # Explicitly allow localhost:5173 (frontend)
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
 
     logger.info('App created.')
 
