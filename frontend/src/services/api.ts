@@ -26,7 +26,7 @@ export interface TransactionFilter {
     amountMin?: number; // Backend uses these
     amountMax?: number;
     category?: string;
-    type?: 'income' | 'expense';
+    type?: 'income' | 'expense' | '';
     sort?: string;
 }
 
