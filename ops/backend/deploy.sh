@@ -9,5 +9,5 @@ if [[ -z "${RENDER_BACKEND_DEV_HOOK:-}" ]]; then
   exit 1
 fi
 
-curl -fsS -X POST "$RENDER_BACKEND_DEV_HOOK"
+curl -fsSv -X POST "$RENDER_BACKEND_DEV_HOOK"
 echo "Triggered backend DEV deploy on Render"
