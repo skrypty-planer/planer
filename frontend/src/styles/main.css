@@ -1,14 +1,20 @@
-/* Globalny plik CSS – prosty test i layout bazowy */
+/* Import banking-themed font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* New color palette */
 :root {
-    --bg: #ffffff;
-    --text: #222;
-    --muted: #666;
-    --primary: #2962ff;
-    --primary-weak: #e3f2fd;
-    --success: #2e7d32;
-    --danger: #c62828;
-    --card: #fff;
-    --border: #e0e0e0;
+    --bg: #FFFFFF;
+    --bg-secondary: #E0E9F6;
+    --primary: #3E68A3;
+    --accent: #A1C63A;
+    --text: #04080F;
+    --text-muted: #5a6c7d;
+    --success: #A1C63A;
+    --danger: #d32f2f;
+    --card: #FFFFFF;
+    --border: #E0E9F6;
+    --hover: #2d5080;
+    --shadow: rgba(62, 104, 163, 0.1);
 }
 
 * {
@@ -19,9 +25,9 @@ html,
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
     color: var(--text);
-    background: #f5f7fb;
+    background: var(--bg-secondary);
 }
 
 a {
@@ -33,14 +39,16 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Cards */
 .card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px var(--shadow);
 }
 
+/* Grid layouts */
 .grid {
     display: grid;
     gap: 1rem;
@@ -54,23 +62,40 @@ a:hover {
     grid-template-columns: repeat(2, 1fr);
 }
 
+/* Kafel (tile) styles */
 .kafel {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1rem;
-    background: #fff;
+    background: var(--card);
+    transition: all 0.2s ease;
 }
 
-.kafel--active {
+.kafel--active,
+.kafel.active {
     border-color: var(--primary);
-    background: var(--primary-weak);
+    background: var(--bg-secondary);
+    color: var(--primary);
 }
 
+button.kafel {
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+button.kafel:hover {
+    border-color: var(--primary);
+    background: var(--bg-secondary);
+}
+
+/* Caption text */
 .caption {
-    color: var(--muted);
+    color: var(--text-muted);
     font-size: 0.9rem;
 }
 
+/* Tables */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -79,36 +104,226 @@ a:hover {
 .table th,
 .table td {
     border-bottom: 1px solid var(--border);
-    padding: .6rem .4rem;
+    padding: .8rem .6rem;
     text-align: left;
 }
 
 .table th {
-    font-weight: 500;
-    color: #444;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg-secondary);
 }
 
+.table tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* Badges */
 .badge {
     display: inline-block;
-    padding: .2rem .5rem;
+    padding: .3rem .7rem;
     border-radius: 999px;
     font-size: .85rem;
+    font-weight: 500;
     border: 1px solid var(--border);
 }
 
 .badge--income {
     color: var(--success);
+    background: rgba(161, 198, 58, 0.1);
     border-color: var(--success);
 }
 
 .badge--expense {
     color: var(--danger);
+    background: rgba(211, 47, 47, 0.1);
     border-color: var(--danger);
 }
 
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--hover);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--border);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #8bad31;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b71c1c;
+}
+
+.btn-icon {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 0.7rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-input.error,
+.form-select.error {
+    border-color: var(--danger);
+}
+
+.form-error {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--danger);
+}
+
+.form-file-input {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(4, 8, 15, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px var(--shadow);
+}
+
+.modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.empty-state-message {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Footer */
 .footer {
     margin-top: auto;
     padding: 1rem;
     border-top: 1px solid var(--border);
-    background: #fff;
+    background: var(--card);
+    text-align: center;
+    color: var(--text-muted);
 }
