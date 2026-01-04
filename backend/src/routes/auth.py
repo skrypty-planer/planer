@@ -16,7 +16,7 @@ def login():
     
     try:
         check_if_data_is_not_None([username, password])
-        auth.check_if_user_is_logged_in(username)
+        auth.check_if_user_is_logged_in(user_id)
         user_id = auth.create_user(username, password)
 
         session['user_id'] = user_id  # save current user's user_id to session for further use
@@ -52,7 +52,16 @@ def me():
     try:
         check_if_data_is_not_None([user_id])
         user = cache.get_user(user_id)
-        auth.check_if_user_is_logged_in(user.username)
+        if len(current_app.pending_errors) > 0:
+            err = {
+                'message': current_app.pending_errors[0].error,
+                'status_code': current_app.pending_errors[0].status_code
+            }
+            current_app.pending_errors = []
+            return jsonify(err)
+        
+        if not auth.check_if_user_is_logged_in(user_id):
+            session['user_id'] = user_id
         
         if len(current_app.pending_errors) > 0:
             err = {

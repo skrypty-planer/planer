@@ -10,10 +10,8 @@ class TransactionManager(metaclass=Singleton):
     def create_transation(self, user_id, name, transaction_type, amount, category):
         cache = CacheManager()
         
-        try:
-            user = self.get_user(user_id)
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+        user = cache.get_user(user_id)
+
         transaction_id = len(user["transactions"] + 1)
 
         transaction = Transaction(transaction_id, name, category, amount, transaction_type, date.today().strftime("%Y-%m-%d"))

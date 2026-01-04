@@ -12,53 +12,44 @@ class CacheManager(metaclass=Singleton):
         self.cache = cache
 
     def list_transactions(self, user_id):
-        try:
-            user = self.get_user(user_id)
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+        user = self.get_user(user_id)
 
         return user["transactions"]
 
     def add_transaction(self, user_id, new_transaction: Transaction):
-        try:
-            user = self.get_user(user_id)
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+
+        user = self.get_user(user_id)
 
         # Aktualizacja danych użytkownika
         user["transactions"].append(new_transaction)
         user["funds"] += new_transaction["amount"]
 
         # Zapisanie nowych danych w bazie
-        try:
-            self.set_user(user_id, user)
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+        self.set_user(user_id, user)
 
         return new_transaction["transaction_id"]
     
     def get_number_of_transactions_for_user(self, user_id):
-        try:
-            user = self.get_user(user_id)
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+
+        user = self.get_user(user_id)
+
         return len(user["transactions"])
         
     def get_user(self, user_id):
-        try:
+        if user_id in self.cache.get("users").keys():
             user = self.cache.get("users")[user_id]
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+        else:
+            current_app.pending_errors.append(DATA_NOT_FOUND_EXCEPTION())
+            user = None
         
         return user
     
     def set_user(self, user_id, user: User):
         users = self.cache.get("users")
         
-        try:
-            user = users[user_id]
-        except DATA_NOT_FOUND_EXCEPTION as ex:
-            current_app.pending_errors.append(ex)
+        if not user_id in users.keys():
+            current_app.pending_errors.append(DATA_NOT_FOUND_EXCEPTION())
+            return
         
         users[user_id] = user.get_obj()
         
