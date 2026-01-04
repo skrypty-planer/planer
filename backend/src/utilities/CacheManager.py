@@ -56,4 +56,4 @@ class CacheManager(metaclass=Singleton):
         self.cache.set("users", users)
     
     def get_number_of_users(self):
-        return len(self.cache.get('users'))
+        return len(self.cache.get('users').keys())
