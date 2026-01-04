@@ -10,7 +10,7 @@ cd "$PROJECT_ROOT"
 pip install -r "$BACKEND_DIR/requirements.txt" >/dev/null
 
 export PYTHONPATH="$PROJECT_ROOT"
-HOST=127.0.0.1
+HOST=${1:-0.0.0.0}
 PORT=${2:-5000}
 
 
@@ -25,7 +25,7 @@ trap cleanup EXIT
 
 # Wait for health
 ATTEMPTS=30
-until curl -fsS "http://$HOST:$PORT/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
+until curl -fsS "http://$HOST:$PORT/check/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
   ATTEMPTS=$((ATTEMPTS-1))
   sleep 1
   echo "Waiting for app... attempts left: $ATTEMPTS"
@@ -37,7 +37,7 @@ until curl -fsS "http://$HOST:$PORT/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; d
 done
 
 # Health check
-curl -fsS "http://$HOST:$PORT/health" | tee /tmp/health.json
+curl -fsS "http://$HOST:$PORT/check/health" | tee /tmp/health.json
 
 # # <> endpoint
 # curl -fsS "http://$HOST:$PORT/api/v1/" | tee /tmp/<>.json
