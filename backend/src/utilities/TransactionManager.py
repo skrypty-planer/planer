@@ -3,6 +3,7 @@ from ..models.transaction import Transaction
 from datetime import date, datetime, timedelta
 from .CacheManager import CacheManager
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
+from ..error_handling.logger import logger
 from flask import current_app
 import random
 import uuid
@@ -70,7 +71,8 @@ class TransactionManager(metaclass=Singleton):
 
     def get_dashboard_summary(self, user_id):
         transactions = self.ensure_user_data(user_id)
-        if transactions is None:
+        if not transactions:
+            logger.debug("transactions was empty :/")
             return {
                 "incomeDaily": float('nan'),
                 "expenseDaily": float('nan'),
