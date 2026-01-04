@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 
 from backend.src.error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, HTTP_STATUS_CODE
 from backend.src.utilities.TransactionManager import TransactionManager
@@ -16,16 +16,25 @@ def get_transactions():
         user_id = session['user_id']  # get id from session
     try:
         transactions = trans.list_transactions(user_id)
+        
+        if len(current_app.pending_errors) > 0:
+            err = {
+                'message': current_app.pending_errors[0].error,
+                'status_code': current_app.pending_errors[0].status_code
+            }
+            current_app.pending_errors = []
+            return jsonify(err)
+        
         logger.info('Get transactions successful.')
         return jsonify({
             'transactions': transactions,
             'status_code': HTTP_STATUS_CODE.OK
         })
-    except INTERNAL_ERROR_EXCEPTION as ex:
+    except DATA_NOT_FOUND_EXCEPTION or INTERNAL_ERROR_EXCEPTION as ex:
         logger.error(ex.error)
         return jsonify({
-            'message': ex.error,
-            'status_code': ex.status_code
+            'message': 'error',
+            'status_code': 400
         })
 
 @bp.route('/filter', methods=["GET"])
@@ -44,6 +53,15 @@ def filter_transactions():
 
     try:
         transactions = trans.filter_transactions(user_id, **filters)
+        
+        if len(current_app.pending_errors) > 0:
+            err = {
+                'message': current_app.pending_errors[0].error,
+                'status_code': current_app.pending_errors[0].status_code
+            }
+            current_app.pending_errors = []
+            return jsonify(err)
+        
         logger.info('Filter transactions successful.')
         return jsonify({
             'transactions': transactions,
@@ -71,6 +89,15 @@ def add_transaction():
             amount=data['Kwota'],
             category=data["Kategoria"]
         )
+        
+        if len(current_app.pending_errors) > 0:
+            err = {
+                'message': current_app.pending_errors[0].error,
+                'status_code': current_app.pending_errors[0].status_code
+            }
+            current_app.pending_errors = []
+            return jsonify(err)
+        
         logger.info('Transaction added.')
         return jsonify({
             'transaction': transaction,
@@ -79,7 +106,7 @@ def add_transaction():
     except DATA_NOT_FOUND_EXCEPTION or INTERNAL_ERROR_EXCEPTION as ex:
         logger.error(ex.error)
         return jsonify({
-            'message': ex.error,
-            'status_code': ex.status_code
+            'message': "error",
+            'status_code': 400
         })
 

@@ -31,7 +31,7 @@ def create_app(test_config=None):
         logger.info('Loaded test configuration.')
 
     cache = Cache(app)
-    cache.set("users", [])
+    cache.set("users", dict())
     logger.info('Cache created.')
 
     from .routes import auth, transactions, health
@@ -49,6 +49,8 @@ def create_app(test_config=None):
     TransactionManager()
     
     logger.info('Created singleton objects.')
+
+    app.pending_errors = []
 
     return app
 

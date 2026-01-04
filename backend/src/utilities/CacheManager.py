@@ -3,6 +3,7 @@ from ..models.user import User
 from ..models.transaction import Transaction
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
 from flask_caching import Cache
+from flask import current_app
 from datetime import date, datetime
 
 class CacheManager(metaclass=Singleton):
@@ -14,7 +15,7 @@ class CacheManager(metaclass=Singleton):
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
 
         return user["transactions"]
 
@@ -22,7 +23,7 @@ class CacheManager(metaclass=Singleton):
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
 
         # Aktualizacja danych użytkownika
         user["transactions"].append(new_transaction)
@@ -32,7 +33,7 @@ class CacheManager(metaclass=Singleton):
         try:
             self.set_user(user_id, user)
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
 
         return new_transaction["transaction_id"]
     
@@ -40,14 +41,14 @@ class CacheManager(metaclass=Singleton):
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
         return len(user["transactions"])
         
     def get_user(self, user_id):
         try:
             user = self.cache.get("users")[user_id]
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
         
         return user
     
@@ -57,7 +58,7 @@ class CacheManager(metaclass=Singleton):
         try:
             user = users[user_id]
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
         
         users[user_id] = user.get_obj()
         

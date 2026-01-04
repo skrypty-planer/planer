@@ -5,7 +5,7 @@ class HTTP_STATUS_CODE:
     DATA_NOT_FOUND = 404
     INTERNAL_SERVER_ERROR = 500
 
-class API_EXCEPTION(Exception):
+class API_EXCEPTION(BaseException):
     def __init__(self, message = None, error = None) -> None:
         super().__init__(message)
         if error:

@@ -3,6 +3,7 @@ from ..models.transaction import Transaction
 from datetime import date, datetime
 from .CacheManager import CacheManager
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
+from flask import current_app
 
 class TransactionManager(metaclass=Singleton):
     
@@ -12,7 +13,7 @@ class TransactionManager(metaclass=Singleton):
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
-            raise ex
+            current_app.pending_errors.append(ex)
         transaction_id = len(user["transactions"] + 1)
 
         transaction = Transaction(transaction_id, name, category, amount, transaction_type, date.today().strftime("%Y-%m-%d"))
