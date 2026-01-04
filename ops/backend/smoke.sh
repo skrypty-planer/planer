@@ -10,7 +10,7 @@ cd "$PROJECT_ROOT"
 pip install -r "$BACKEND_DIR/requirements.txt" >/dev/null
 
 export PYTHONPATH="$PROJECT_ROOT"
-HOST=${1:-0.0.0.0}
+HOST=127.0.0.1
 PORT=${2:-5000}
 
 
