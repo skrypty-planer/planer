@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 
 from backend.src.error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, HTTP_STATUS_CODE
 from backend.src.services.transactions_service import TransactionsService as TxSvc
@@ -8,7 +8,7 @@ bp = Blueprint('/transactions', __name__, url_prefix='/transactions')
 
 @bp.route('/get', methods=["GET"])
 def get_transactions():
-    user_id = None  # TODO
+    user_id = session['user_id']  # get id from session
     try:
         transactions = TxSvc.list_transactions(user_id)
         logger.info('Get transactions successful.')
@@ -25,7 +25,7 @@ def get_transactions():
 
 @bp.route('/filter', methods=["GET"])
 def filter_transactions():
-    user_id = None  # TODO
+    user_id = session['user_id']  # get id from session
     filters = {
         "date_from": request.args.get("date_from"),
         "date_to": request.args.get("date_to"),
@@ -51,7 +51,7 @@ def filter_transactions():
 
 @bp.route('/store', methods=["POST"])
 def add_transaction():
-    user_id = None  # TODO
+    user_id = session['user_id']  # get id from session
     data = request.json
 
     try:

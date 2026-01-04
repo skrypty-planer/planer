@@ -19,6 +19,10 @@ def create_app(test_config=None):
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+
+    # set up flask.session
+    app.config["SECRET_KEY"] = "super-secret-key"  # lazy - "good enough for now"
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
     
     logger.info('App created.')
     

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from ..error_handling.logger import logger
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, UNAUTHORIZED_EXCEPTION, HTTP_STATUS_CODE
 from ..utilities.global_utils import check_if_data_is_not_None
@@ -16,6 +16,9 @@ def login():
         check_if_data_is_not_None([username, password])
         check_if_user_is_logged_in(username)
         user_id = create_user(username, password)
+
+        session['user_id'] = user_id  # save current user's user_id to session for further use
+
         logger.info('User logged in.')
         return jsonify({
             'user_id': user_id,

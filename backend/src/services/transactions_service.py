@@ -1,17 +1,19 @@
 from flask_caching import Cache
 from datetime import date, datetime
 
+from backend.src.utilities.caching_utils import get_user_by_id
+
 
 class TransactionsService:
     def __init__(self, cache: Cache):
         self.cache = cache
 
     def list_transactions(self, user_id):
-        user = None  # TODO GET USER DATA
+        user = get_user_by_id(user_id)
         return user["transactions"]
 
     def filter_transactions(self, user_id, date_from, date_to, category, description, amount_min, amount_max):
-        user = None  # TODO GET USER DATA
+        user = get_user_by_id(user_id)
         transactions = user["transactions"]
 
         if date_from is not None:
@@ -49,7 +51,7 @@ class TransactionsService:
         return filter_result
 
     def add_transaction(self, user_id, category, amount, description):
-        user = None  # TODO GET USER DATA
+        user = get_user_by_id(user_id)
         transaction_id = len(user["transactions"] + 1)
 
         new_transaction = {
