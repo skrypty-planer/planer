@@ -43,7 +43,7 @@ def me():
     
     try:
         check_if_data_is_not_None([user_id])
-        user = cache.get_user_by_id(user_id)
+        user = cache.get_user(user_id)
         auth.check_if_user_is_logged_in(user.username)
         return jsonify({
             'user_id': user_id,
