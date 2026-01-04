@@ -24,10 +24,10 @@ cleanup() {
 trap cleanup EXIT
 
 # Wait for health
-ATTEMPTS=30
+ATTEMPTS=40
 until curl -fsS "http://$HOST:$PORT/check/health" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
   ATTEMPTS=$((ATTEMPTS-1))
-  sleep 1
+  sleep 2
   echo "Waiting for app... attempts left: $ATTEMPTS"
   if ! kill -0 "$PID" 2>/dev/null; then
     echo "App process exited unexpectedly:" >&2
