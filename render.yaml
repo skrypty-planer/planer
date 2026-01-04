@@ -23,7 +23,7 @@ projects:
             runtime: static
             repo: https://github.com/skrypty-planer/planer
             branch: main
-            buildCommand: cd frontend && npm install && npm run dev
+            buildCommand: cd frontend && npm install && npm run build
             staticPublishPath: frontend/dist
             # envVars:
             #   - key: VITE_API_BASE_URL_DEV
