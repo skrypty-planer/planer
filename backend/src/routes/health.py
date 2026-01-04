@@ -1,7 +1,16 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
+from ..error_handling.logger import logger
 
-bp = Blueprint()
+bp = Blueprint('/check', __name__, url_prefix='/check')
 
-@bp.route("/health", methods=["GET"])
+@bp.route('/health', methods=['GET'])
 def health():
-    return jsonify({"status": "ok"}), 200
+    try:
+        return jsonify({
+            'status_code': 200
+        })
+    except Exception as ex:
+        return jsonify({
+            'status_code': 400,
+            'exception': ex
+        })
