@@ -54,6 +54,7 @@ class TransactionsService:
 
         new_transaction = {
             "id": transaction_id,
+            "name": name,
             "category": category,
             "amount": amount,
             "type": transaction_type,
