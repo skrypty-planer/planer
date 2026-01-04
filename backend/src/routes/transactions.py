@@ -10,7 +10,13 @@ bp = Blueprint('/transactions', __name__, url_prefix='/transactions')
 def get_transactions():
     trans = TransactionManager()
     
-    user_id = request.json['user_id']
+    try:
+        user_id = request.json['user_id']
+    except Exception as ex:
+        return jsonify({
+            'message': 'keyerror',
+            'status_code': 400
+        })
     
     if user_id is None:
         user_id = session['user_id']  # get id from session
@@ -32,7 +38,17 @@ def get_transactions():
 def filter_transactions():
     trans = TransactionManager()
     
-    user_id = session['user_id']  # get id from session
+    try:
+        user_id = request.json['user_id']
+    except Exception as ex:
+        return jsonify({
+            'message': 'keyerror',
+            'status_code': 400
+        })
+    
+    if user_id is None:
+        user_id = session['user_id']  # get id from session
+    
     filters = {
         "date_from": request.args.get("date_from"),
         "date_to": request.args.get("date_to"),
@@ -60,7 +76,17 @@ def filter_transactions():
 def add_transaction():
     trans = TransactionManager()
     
-    user_id = session['user_id']  # get id from session
+    try:
+        user_id = request.json['user_id']
+    except Exception as ex:
+        return jsonify({
+            'message': 'keyerror',
+            'status_code': 400
+        })
+    
+    if user_id is None:
+        user_id = session['user_id']  # get id from session
+    
     data = request.json
 
     try:
