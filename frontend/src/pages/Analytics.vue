@@ -1,7 +1,31 @@
 <template>
   <section>
-    <!-- Unified Balance Chart -->
+    <!-- Średnie dzienne (Top) -->
     <div class="card">
+      <div class="chart-header">
+        <h3 style="margin:0;">Średnie dzienne: przychody i wydatki</h3>
+        <div class="buttons">
+            <button class="kafel" :class="{ active: averagesPeriod === 'yearly' }" @click="averagesPeriod = 'yearly'">Rok</button>
+            <button class="kafel" :class="{ active: averagesPeriod === 'halfYearly' }" @click="averagesPeriod = 'halfYearly'">Pół roku</button>
+            <button class="kafel" :class="{ active: averagesPeriod === 'quarterly' }" @click="averagesPeriod = 'quarterly'">Kwartał</button>
+            <button class="kafel" :class="{ active: averagesPeriod === 'monthly' }" @click="averagesPeriod = 'monthly'">Miesiąc</button>
+            <button class="kafel" :class="{ active: averagesPeriod === 'weekly' }" @click="averagesPeriod = 'weekly'">Tydzień</button>
+        </div>
+      </div>
+      <div class="grid cols-2 daily-averages">
+        <div class="kafel">
+          <div class="caption">Średni dzienny przychód</div>
+          <div class="stat__value stat__value--income">{{ currentAverages.avgDailyIncome }} PLN</div>
+        </div>
+        <div class="kafel">
+          <div class="caption">Średni dzienny wydatek</div>
+          <div class="stat__value stat__value--expense">{{ currentAverages.avgDailyExpense }} PLN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unified Balance Chart -->
+    <div class="card" style="margin-top:1rem;">
       <div class="chart-header">
         <h3 style="margin:0;">Bilans</h3>
         <div class="buttons">
@@ -15,10 +39,10 @@
       
       <div class="chart-container">
          <div class="y-axis">
-            <span>Bilans (zł)</span>
+            <span>Bilans (PLN)</span>
         </div>
         <div class="chart-bars">
-            <div v-for="(label, i) in currentChartData.labels" :key="label + i" class="bar-group-single" :title="`${label}: ${currentChartData.data[i]} zł`">
+            <div v-for="(label, i) in currentChartData.labels" :key="label + i" class="bar-group-single" :title="`${label}: ${currentChartData.data[i]} PLN`">
                 <div class="bar-value" :class="currentChartData.data[i] >= 0 ? 'text-income' : 'text-expense'">
                     {{ formatValue(currentChartData.data[i]) }}
                 </div>
@@ -31,31 +55,30 @@
             </div>
         </div>
       </div>
-      <div class="caption" style="margin-top:2.5rem;">Oś X: Dni miesiąca • Oś Y: Wartość numeryczna w zł</div>
+      <div class="caption" style="margin-top:2.5rem;">Oś X: {{ xAxisLabel }} • Oś Y: Wartość numeryczna w PLN</div>
     </div>
 
-    <!-- Średnie dzienne przychody i wydatki (linia) -->
+    <!-- Pie Charts: Category Rankings -->
     <div class="card" style="margin-top:1rem;">
-      <h3 style="margin:0 0 .6rem;">Średnie dzienne: przychody i wydatki (Ostatni miesiąc)</h3>
-      <div class="grid cols-2 daily-averages">
-        <div class="kafel">
-          <div class="caption">Średni dzienny przychód</div>
-          <div class="stat__value stat__value--income">{{ charts.averages.avgDailyIncome }} zł</div>
-        </div>
-        <div class="kafel">
-          <div class="caption">Średni dzienny wydatek</div>
-          <div class="stat__value stat__value--expense">{{ charts.averages.avgDailyExpense }} zł</div>
+      <div class="chart-header">
+        <h3 style="margin:0;">Ranking kategorii</h3>
+        <div class="buttons">
+            <button class="kafel" :class="{ active: piePeriod === 'yearly' }" @click="piePeriod = 'yearly'">Rok</button>
+            <button class="kafel" :class="{ active: piePeriod === 'halfYearly' }" @click="piePeriod = 'halfYearly'">Pół roku</button>
+            <button class="kafel" :class="{ active: piePeriod === 'quarterly' }" @click="piePeriod = 'quarterly'">Kwartał</button>
+            <button class="kafel" :class="{ active: piePeriod === 'monthly' }" @click="piePeriod = 'monthly'">Miesiąc</button>
+            <button class="kafel" :class="{ active: piePeriod === 'weekly' }" @click="piePeriod = 'weekly'">Tydzień</button>
         </div>
       </div>
-    </div>
 
-    <!-- Ranking kategorii z ostatnich 3 miesięcy -->
-    <div class="card" style="margin-top:1rem;">
-      <h3 style="margin:0 0 .6rem;">Ranking kategorii (wydatki, ostatnie 3 mies.)</h3>
-      <div class="grid cols-3 ranking-grid">
-        <div class="kafel" v-for="r in charts.ranking" :key="r.category">
-          <div class="caption">{{ r.category }}</div>
-          <div class="stat__value stat__value--expense">{{ r.amount }} zł</div>
+      <div class="grid cols-2 pie-charts-grid">
+        <div>
+          <h4 style="text-align: center; margin: 0 0 1rem; color: var(--text);">Wydatki</h4>
+          <PieChart :data="expenseCategories" />
+        </div>
+        <div>
+          <h4 style="text-align: center; margin: 0 0 1rem; color: var(--text);">Przychody</h4>
+          <PieChart :data="incomeCategories" />
         </div>
       </div>
     </div>
@@ -63,12 +86,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
-import { getCharts } from '../services/api'
-import type { ChartsResponse, ChartData } from '../services/api'
+import { onMounted, ref, computed, watch } from 'vue'
+import { getCharts, getCategoryBreakdown } from '../services/api'
+import type { ChartsResponse, ChartData, CategoryBreakdown } from '../services/api'
+import PieChart from '../components/PieChart.vue'
 
 const props = defineProps<{
-  user: { id: string; [key: string]: any }
+  user: { id: string; [key: string]: any } | null
 }>()
 
 const charts = ref<ChartsResponse>({
@@ -87,14 +111,81 @@ const charts = ref<ChartsResponse>({
 })
 
 const currentPeriod = ref<'yearly' | 'halfYearly' | 'quarterly' | 'monthly' | 'weekly'>('monthly')
+const piePeriod = ref<'yearly' | 'halfYearly' | 'quarterly' | 'monthly' | 'weekly'>('monthly')
+const averagesPeriod = ref<'yearly' | 'halfYearly' | 'quarterly' | 'monthly' | 'weekly'>('monthly')
+const expenseCategories = ref<CategoryBreakdown[]>([])
+const incomeCategories = ref<CategoryBreakdown[]>([])
 
 const currentChartData = computed<ChartData>(() => {
     return charts.value.unified[currentPeriod.value]
 })
 
-onMounted(async () => {
-  charts.value = await getCharts(props.user.id)
+const xAxisLabel = computed(() => {
+  switch (currentPeriod.value) {
+    case 'yearly':
+    case 'halfYearly':
+    case 'quarterly':
+      return 'Miesiące'
+    case 'monthly':
+      return 'Dni miesiąca'
+    case 'weekly':
+      return 'Dni tygodnia'
+    default:
+      return 'Oś X'
+  }
 })
+
+const currentAverages = computed(() => {
+  if (!props.user) return { avgDailyIncome: 0, avgDailyExpense: 0 }
+  
+  // Calculate averages based on selected period
+  const now = new Date()
+  let daysInPeriod = 30
+  
+  switch (averagesPeriod.value) {
+    case 'yearly':
+      daysInPeriod = 365
+      break
+    case 'halfYearly':
+      daysInPeriod = 183
+      break
+    case 'quarterly':
+      daysInPeriod = 92
+      break
+    case 'monthly':
+      daysInPeriod = 30
+      break
+    case 'weekly':
+      daysInPeriod = 7
+      break
+  }
+  
+  // Simple calculation: divide monthly average by days
+  const baseIncome = charts.value.averages.avgDailyIncome
+  const baseExpense = charts.value.averages.avgDailyExpense
+  
+  return {
+    avgDailyIncome: Math.round(baseIncome * (30 / daysInPeriod)),
+    avgDailyExpense: Math.round(baseExpense * (30 / daysInPeriod))
+  }
+})
+
+onMounted(async () => {
+  if (props.user) {
+    charts.value = await getCharts(props.user.id)
+    await loadPieCharts()
+  }
+})
+
+async function loadPieCharts() {
+  if (!props.user) return
+  expenseCategories.value = await getCategoryBreakdown(props.user.id, 'expense', piePeriod.value)
+  incomeCategories.value = await getCategoryBreakdown(props.user.id, 'income', piePeriod.value)
+}
+
+// Watch pie period changes
+
+watch(piePeriod, loadPieCharts)
 
 function toHeight(v: number) {
   // Dynamic scaling based on max value in current dataset would be better, but fixed for now
@@ -209,6 +300,11 @@ function formatValue(v: number) {
 .stat__value--income { color: var(--success); }
 .stat__value--expense { color: var(--danger); }
 
+.pie-charts-grid {
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
 /* RWD */
 @media (max-width: 768px) {
     .chart-header {
@@ -218,7 +314,7 @@ function formatValue(v: number) {
     .daily-averages.grid.cols-2 {
         grid-template-columns: 1fr;
     }
-    .ranking-grid.grid.cols-3 {
+    .pie-charts-grid.grid.cols-2 {
         grid-template-columns: 1fr;
     }
     .bar-value {

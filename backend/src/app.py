@@ -5,7 +5,6 @@ from flask_caching import Cache
 
 from .config import Config, DevelopmentConfig
 
-
 def create_app(test_config=None):
     # configure logger
     from .error_handling.logger import configure_logger, logger
