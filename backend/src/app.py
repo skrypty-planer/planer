@@ -31,6 +31,7 @@ def create_app(test_config=None):
         logger.info('Loaded test configuration.')
 
     cache = Cache(app)
+    cache.set("users", [])
     logger.info('Cache created.')
 
     from .routes import auth, transactions, health
