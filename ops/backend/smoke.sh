@@ -36,6 +36,7 @@ until curl -fsS "http://$HOST:$PORT/check/health" >/dev/null || [ $ATTEMPTS -eq 
   fi
 done
 
+echo "Attempt succesful! Now running health check validation"
 # Health check
 curl -fsS "http://$HOST:$PORT/check/health" | tee /tmp/health.json
 
