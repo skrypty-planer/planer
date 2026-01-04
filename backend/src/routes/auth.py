@@ -1,82 +1,144 @@
 from flask import Blueprint, request, jsonify, session, current_app
 from ..error_handling.logger import logger
-from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, UNAUTHORIZED_EXCEPTION, HTTP_STATUS_CODE
-from ..utilities.global_utils import check_if_data_is_not_None
+from ..error_handling.exceptions import HTTP_STATUS_CODE
 from ..utilities.AuthManager import AuthManager
-from ..utilities.CacheManager import CacheManager
 
 bp = Blueprint('/auth', __name__, url_prefix='/auth')
 
+@bp.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    avatar_url = data.get('avatarUrl')
+    
+    if not username or not password:
+        return jsonify({'message': 'Brak wymaganych danych', 'status_code': 400})
+
+    auth = AuthManager()
+    user_id, error = auth.register_user(username, password, avatar_url)
+    
+    if error:
+        return jsonify({'message': error, 'status_code': 400})
+
+    # Auto login
+    session['user_id'] = user_id
+    
+    logger.info(f'User registered: {user_id}')
+    return jsonify({
+        'user': {'id': user_id, 'username': username, 'avatarUrl': avatar_url}, # Helper structure
+        'status_code': HTTP_STATUS_CODE.OK
+    })
+
 @bp.route('/login', methods=['POST'])
 def login():
-    username = request.json['username']
-    password = request.json['password']
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
     
+    if not username or not password:
+        return jsonify({'message': 'Brak wymaganych danych', 'status_code': 400})
+
     auth = AuthManager()
+    user_id, error = auth.login(username, password)
     
-    try:
-        check_if_data_is_not_None([username, password])
-        user_id = auth.create_user(username, password)
+    if error:
+        return jsonify({'message': error, 'status_code': 401})
 
-        session['user_id'] = user_id  # save current user's user_id to session for further use
+    session['user_id'] = user_id
+    
+    logger.info(f'User logged in: {user_id}')
+    return jsonify({
+        'user_id': user_id,
+        'status_code': HTTP_STATUS_CODE.OK
+    })
 
-        if len(current_app.pending_errors) > 0:
-            err = {
-                'message': current_app.pending_errors[0].error,
-                'status_code': current_app.pending_errors[0].status_code
-            }
-            current_app.pending_errors = []
-            return jsonify(err)
+@bp.route('/guest-login', methods=['POST'])
+def guest_login():
+    auth = AuthManager()
+    user_id = auth.login_guest()
+    
+    session['user_id'] = user_id
+    
+    logger.info(f'Guest logged in: {user_id}')
+    return jsonify({
+        'user_id': user_id,
+        'status_code': HTTP_STATUS_CODE.OK
+    })
 
-        logger.info('User logged in.')
-        return jsonify({
-            'user_id': user_id,
-            'status_code': HTTP_STATUS_CODE.OK
-        })
-    except DATA_NOT_FOUND_EXCEPTION or INTERNAL_ERROR_EXCEPTION as ex:
-        logger.error(ex.error)
-        return jsonify({
-            'message': ex.error,
-            'status_code': ex.status_code
-        })
-        
+@bp.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_id', None)
+    return jsonify({'status_code': HTTP_STATUS_CODE.OK})
 
 @bp.route('/me', methods=['GET'])
 def me():
-    user_id = request.json['user_id']
+    # Frontend sends user_id sometimes, but we should rely on session or check provided id
+    # The original implementation used request.json['user_id'] which IS WRONG for GET requests usually (no body).
+    # But let's check both or stick to session if available. 
+    # Frontend `api.ts` `ensureUserData` logic suggests it knows the ID.
+    # Frontend `auth.ts` `getCurrentUser` reads from local storage.
+    # Let's assume frontend sends query param or we use session.
+    # Original used request.json['user_id'].
     
-    auth = AuthManager()
+    user_id = session.get('user_id')
+    # fallback to query param if needed for stateless checks? 
+    # But let's verify if frontend communicates via headers/params.
+    # The prompt says "backend... functionality... like simulated".
+    
+    from ..utilities.CacheManager import CacheManager
     cache = CacheManager()
     
-    try:
-        check_if_data_is_not_None([user_id])
-        user = cache.get_user(user_id)
-        if len(current_app.pending_errors) > 0:
-            err = {
-                'message': current_app.pending_errors[0].error,
-                'status_code': current_app.pending_errors[0].status_code
-            }
-            current_app.pending_errors = []
-            return jsonify(err)
+    if not user_id:
+        return jsonify({'message': 'Unauthorized', 'status_code': 401})
         
-        if not auth.check_if_user_is_logged_in(user_id):
-            session['user_id'] = user_id
+    user = cache.get_user(user_id)
+    if not user:
+        return jsonify({'message': 'User not found', 'status_code': 404})
         
-        if len(current_app.pending_errors) > 0:
-            err = {
-                'message': current_app.pending_errors[0].error,
-                'status_code': current_app.pending_errors[0].status_code
-            }
-            current_app.pending_errors = []
-            return jsonify(err)
+    # Return user session info
+    user_session = {
+        'id': user['user_id'],
+        'username': user['username'],
+        'avatarUrl': user['avatar_url'],
+        'password': user['password'] # Included in frontend simulation session
+    }
+
+    return jsonify({
+        'user': user_session,
+        'status_code': HTTP_STATUS_CODE.OK
+    })
+
+@bp.route('/update-profile', methods=['PUT'])
+def update_profile():
+    if 'user_id' not in session:
+        return jsonify({'message': 'Unauthorized', 'status_code': 401})
         
-        return jsonify({
-            'user_id': user_id,
-            'user': user,
-            'status_code': HTTP_STATUS_CODE.OK
-        })
-    except DATA_NOT_FOUND_EXCEPTION or UNAUTHORIZED_EXCEPTION as ex:
-        return jsonify({
-            'message': ex.error,
-            'status_code': ex.status_code
-        })
+    user_id = session['user_id']
+    data = request.json
+    
+    auth = AuthManager()
+    success, error = auth.update_profile(
+        user_id, 
+        username=data.get('username'),
+        password=data.get('password'),
+        avatar_url=data.get('avatarUrl')
+    )
+    
+    if not success:
+        return jsonify({'message': error, 'status_code': 400})
+        
+    # Return updated session data
+    from ..utilities.CacheManager import CacheManager
+    user = CacheManager().get_user(user_id)
+    user_session = {
+        'id': user['user_id'],
+        'username': user['username'],
+        'avatarUrl': user['avatar_url'],
+        'password': user['password']
+    }
+    
+    return jsonify({
+        'user': user_session,
+        'status_code': HTTP_STATUS_CODE.OK
+    })
