@@ -17,7 +17,7 @@ class AuthManager(metaclass=Singleton):
     def create_user(self, username, password, avatar_url = ''):
         cache = CacheManager()
         user_id = cache.get_number_of_users() + 1
-        user = User(user_id, username, password, avatar_url = avatar_url)
+        user = User(user_id, username, password, _avatar_url = avatar_url)
         
         cache.set_user(user_id, user)
         

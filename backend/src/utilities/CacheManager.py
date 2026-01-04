@@ -47,8 +47,8 @@ class CacheManager(metaclass=Singleton):
     def set_user(self, user_id, user: User):
         users = self.cache.get("users")
         
-        if not user_id in users.keys():
-            current_app.pending_errors.append(DATA_NOT_FOUND_EXCEPTION())
+        if user_id in users.keys():
+            current_app.pending_errors.append(Exception())
             return
         
         users[user_id] = user.get_obj()

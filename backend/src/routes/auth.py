@@ -16,7 +16,6 @@ def login():
     
     try:
         check_if_data_is_not_None([username, password])
-        auth.check_if_user_is_logged_in(user_id)
         user_id = auth.create_user(username, password)
 
         session['user_id'] = user_id  # save current user's user_id to session for further use
