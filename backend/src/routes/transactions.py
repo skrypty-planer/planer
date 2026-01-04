@@ -29,8 +29,8 @@ def filter_transactions():
     filters = {
         "date_from": request.args.get("date_from"),
         "date_to": request.args.get("date_to"),
+        "name": request.args.get("name"),
         "category": request.args.get("category"),
-        "description": request.args.get("description"),
         "amount_min": request.args.get("amount_min"),
         "amount_max": request.args.get("amount_max")
     }
@@ -57,9 +57,10 @@ def add_transaction():
     try:
         transaction = TxSvc.add_transaction(
             user_id=user_id,
-            category=data["category"],
-            amount=data["amount"],
-            description="description"
+            name=data['Nazwa'],
+            transaction_type=data['Typ'],
+            amount=data['Kwota'],
+            category=data["Kategoria"]
         )
         logger.info('Transaction added.')
         return jsonify({

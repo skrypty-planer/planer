@@ -12,7 +12,7 @@ class TransactionsService:
         user = get_user_by_id(user_id)
         return user["transactions"]
 
-    def filter_transactions(self, user_id, date_from, date_to, category, description, amount_min, amount_max):
+    def filter_transactions(self, user_id, date_from, date_to, name, category, amount_min, amount_max):
         user = get_user_by_id(user_id)
         transactions = user["transactions"]
 
@@ -39,18 +39,16 @@ class TransactionsService:
                 continue
             if amount_max is not None and transaction["amount"] > amount_max:
                 continue
-            if category is not None and transaction["category"] != category:
+            if name is not None and transaction["name"] != name:
                 continue
-            if (description is not None
-                    and description not in transaction["description"]
-                    and description.lower() not in transaction["description"]):
+            if category is not None and transaction["category"] != category:
                 continue
 
             filter_result.append(transaction)
 
         return filter_result
 
-    def add_transaction(self, user_id, category, amount, description):
+    def add_transaction(self, user_id, name, transaction_type, amount, category):
         user = get_user_by_id(user_id)
         transaction_id = len(user["transactions"] + 1)
 
@@ -58,7 +56,7 @@ class TransactionsService:
             "id": transaction_id,
             "category": category,
             "amount": amount,
-            "description": description,
+            "type": transaction_type,
             "date": date.today().strftime("%Y-%m-%d")
         }
 
