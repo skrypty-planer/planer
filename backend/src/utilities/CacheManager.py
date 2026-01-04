@@ -28,7 +28,7 @@ class CacheManager(metaclass=Singleton):
     def get_number_of_transactions_for_user(self, user_id):
         return len(self.get_user(user_id)["transactions"])
     
-    def get_user_by_id(self, user_id):
+    def get_user(self, user_id):
         return self.cache.get("users")[user_id]
     
     def set_user(self, user_id, user: User):
