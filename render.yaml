@@ -11,7 +11,7 @@ projects:
             branch: main
             buildCommand: pip install -r backend/requirements.txt
             startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
-            healthCheckPath: /health
+            healthCheckPath: /check/health
             envVars:
               - key: PYTHON_VERSION
                 value: 3.14.0
