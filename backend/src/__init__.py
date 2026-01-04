@@ -12,31 +12,33 @@ def create_app(test_config=None):
     from .error_handling.logger import configure_logger, logger
     configure_logger()
  
-    logger.info('Logger configured.')
+    # logger.info('Logger configured.')
     
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     
-    logger.info('App created.')
+    # logger.info('App created.')
     
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_object(DevelopmentConfig())
-        logger.info('Loaded configuration.')
+        app.testing = False
+        # logger.info('Loaded configuration.')
     else:
         # load the test config if passed in
         app.config.from_object(test_config)
-        logger.info('Loaded test configuration.')
+        app.testing = True
+        # logger.info('Loaded test configuration.')
     
     cache = Cache(app)
-    logger.info('Cache created.')
+    # logger.info('Cache created.')
     
     from .routes import auth, transaction
     app.register_blueprint(auth.bp)
     app.register_blueprint(transaction.bp)
     
-    logger.info('Registered blueprints.')
+    # logger.info('Registered blueprints.')
     
     from .utilities.AuthManager import AuthManager
     from .utilities.CacheManager import CacheManager
@@ -45,6 +47,6 @@ def create_app(test_config=None):
     app.CacheManager = CacheManager()
     app.TransactionManager = TransactionManager()
     
-    logger.info('Created singleton managers')
+    # logger.info('Created singleton managers')
     
     return app

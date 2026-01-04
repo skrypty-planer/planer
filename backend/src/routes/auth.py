@@ -16,7 +16,7 @@ def login():
         check_if_data_is_not_None([username, password])
         auth.check_if_user_is_logged_in(username)
         user_id = auth.create_user(username, password)
-        logger.info('User logged in.')
+        # logger.info('User logged in.')
         return jsonify({
             'user_id': user_id,
             'status_code': HTTP_STATUS_CODE.OK
@@ -39,9 +39,10 @@ def me():
     try:
         check_if_data_is_not_None([user_id])
         user = cache.get_user_by_id(user_id)
-        auth.check_if_user_is_logged_in(user.username)
+        # auth.check_if_user_is_logged_in(user.username)
         return jsonify({
             'user_id': user_id,
+            'user': user,
             'status_code': HTTP_STATUS_CODE.OK
         })
     except DATA_NOT_FOUND_EXCEPTION or UNAUTHORIZED_EXCEPTION as ex:

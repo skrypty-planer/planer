@@ -1,4 +1,5 @@
 from ..src.__init__ import create_app
+from .__init__ import client, app
 
 def test_create_app():
     """
