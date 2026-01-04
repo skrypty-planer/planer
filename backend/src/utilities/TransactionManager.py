@@ -70,6 +70,15 @@ class TransactionManager(metaclass=Singleton):
 
     def get_dashboard_summary(self, user_id):
         transactions = self.ensure_user_data(user_id)
+        if transactions is None:
+            return {
+                "incomeDaily": float('nan'),
+                "expenseDaily": float('nan'),
+                "balanceDaily": float('nan'),
+                "incomeMonthly": float('nan'),
+                "expenseMonthly": float('nan'),
+                "balanceMonthly": float('nan')
+            }
         today = datetime.now().strftime("%Y-%m-%d")
         now = datetime.now()
         first_day_month = datetime(now.year, now.month, 1).strftime("%Y-%m-%d")
