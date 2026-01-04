@@ -11,7 +11,6 @@ class CacheManager(metaclass=Singleton):
         self.cache = cache
 
     def list_transactions(self, user_id):
-        user = self.get_user(user_id)
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
@@ -20,7 +19,6 @@ class CacheManager(metaclass=Singleton):
         return user["transactions"]
 
     def add_transaction(self, user_id, new_transaction: Transaction):
-        user = self.get_user(user_id)
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
@@ -31,7 +29,6 @@ class CacheManager(metaclass=Singleton):
         user["funds"] += new_transaction["amount"]
 
         # Zapisanie nowych danych w bazie
-        self.set_user(user_id, user)
         try:
             self.set_user(user_id, user)
         except DATA_NOT_FOUND_EXCEPTION as ex:
@@ -40,16 +37,12 @@ class CacheManager(metaclass=Singleton):
         return new_transaction["transaction_id"]
     
     def get_number_of_transactions_for_user(self, user_id):
-        return len(self.get_user(user_id)["transactions"])
         try:
             user = self.get_user(user_id)
         except DATA_NOT_FOUND_EXCEPTION as ex:
             raise ex
         return len(user["transactions"])
-    
-<<<<<<< Updated upstream
-    def get_user_by_id(self, user_id):
-        return self.cache.get("users")[user_id]
+        
     def get_user(self, user_id):
         try:
             user = self.cache.get("users")[user_id]
