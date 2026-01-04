@@ -10,7 +10,7 @@ projects:
             repo: https://github.com/skrypty-planer/planer
             branch: main
             buildCommand: pip install -r backend/requirements.txt
-            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
+            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.src.app:app
             healthCheckPath: /check/health
             envVars:
               - key: PYTHON_VERSION
@@ -23,7 +23,7 @@ projects:
             runtime: static
             repo: https://github.com/skrypty-planer/planer
             branch: main
-            buildCommand: cd frontend && npm install && npm run build
+            buildCommand: cd frontend && npm install && npm run dev
             staticPublishPath: frontend/dist
             # envVars:
             #   - key: VITE_API_BASE_URL_DEV
