@@ -2,6 +2,8 @@ from .Singleton import Singleton
 from flask import session
 from ..models.user import User
 from .CacheManager import CacheManager
+from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
+
 
 class AuthManager(metaclass=Singleton):
     def check_if_user_is_logged_in(self, user_id):
@@ -15,5 +17,10 @@ class AuthManager(metaclass=Singleton):
         cache = CacheManager()
         user_id = cache.get_number_of_users() + 1
         user = User(user_id, username, password, avatar_url = avatar_url)
-        cache.set_user(user_id, user)
+        
+        try:
+            cache.set_user(user_id, user)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
+        
         return user_id

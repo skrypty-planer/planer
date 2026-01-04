@@ -2,13 +2,17 @@ from .Singleton import Singleton
 from ..models.transaction import Transaction
 from datetime import date, datetime
 from .CacheManager import CacheManager
+from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
 
 class TransactionManager(metaclass=Singleton):
     
     def create_transation(self, user_id, name, transaction_type, amount, category):
         cache = CacheManager()
         
-        user = self.get_user(user_id)
+        try:
+            user = self.get_user(user_id)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
         transaction_id = len(user["transactions"] + 1)
 
         transaction = Transaction(transaction_id, name, category, amount, transaction_type, date.today().strftime("%Y-%m-%d"))

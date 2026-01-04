@@ -1,6 +1,7 @@
 from .Singleton import Singleton
 from ..models.user import User
 from ..models.transaction import Transaction
+from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
 from flask_caching import Cache
 from datetime import date, datetime
 
@@ -11,10 +12,19 @@ class CacheManager(metaclass=Singleton):
 
     def list_transactions(self, user_id):
         user = self.get_user(user_id)
+        try:
+            user = self.get_user(user_id)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
+
         return user["transactions"]
 
     def add_transaction(self, user_id, new_transaction: Transaction):
         user = self.get_user(user_id)
+        try:
+            user = self.get_user(user_id)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
 
         # Aktualizacja danych użytkownika
         user["transactions"].append(new_transaction)
@@ -22,18 +32,42 @@ class CacheManager(metaclass=Singleton):
 
         # Zapisanie nowych danych w bazie
         self.set_user(user_id, user)
+        try:
+            self.set_user(user_id, user)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
 
         return new_transaction["transaction_id"]
     
     def get_number_of_transactions_for_user(self, user_id):
         return len(self.get_user(user_id)["transactions"])
+        try:
+            user = self.get_user(user_id)
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
+        return len(user["transactions"])
     
+<<<<<<< Updated upstream
     def get_user_by_id(self, user_id):
         return self.cache.get("users")[user_id]
+    def get_user(self, user_id):
+        try:
+            user = self.cache.get("users")[user_id]
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
+        
+        return user
     
     def set_user(self, user_id, user: User):
         users = self.cache.get("users")
+        
+        try:
+            user = users[user_id]
+        except DATA_NOT_FOUND_EXCEPTION as ex:
+            raise ex
+        
         users[user_id] = user.get_obj()
+        
         self.cache.set("users", users)
     
     def get_number_of_users(self):
