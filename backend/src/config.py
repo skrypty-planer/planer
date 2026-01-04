@@ -3,4 +3,4 @@ class Config:
 
 class DevelopmentConfig(Config):
     CACHE_TYPE="SimpleCache"
-    CACHE_DEFAULT_TIMEOUT=60
+    CACHE_DEFAULT_TIMEOUT=3600
