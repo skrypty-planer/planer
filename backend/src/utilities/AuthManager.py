@@ -7,8 +7,6 @@ from flask import current_app
 
 
 class AuthManager(metaclass=Singleton):
-    def check_if_user_is_logged_in(self, user_id):
-        return session['user_id'] is not None
     
     def check_if_user_exists(self, user_id):
         cache = CacheManager()

@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, session, current_app
 from backend.src.error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, INTERNAL_ERROR_EXCEPTION, HTTP_STATUS_CODE
 from backend.src.utilities.TransactionManager import TransactionManager
 from ..error_handling.logger import logger
+from ..utilities.global_utils import check_if_data_is_not_None
 
 bp = Blueprint('/transactions', __name__, url_prefix='/transactions')
 
@@ -12,8 +13,6 @@ def get_transactions():
     
     user_id = request.json['user_id']
     
-    if user_id is None:
-        user_id = session['user_id']  # get id from session
     try:
         transactions = trans.list_transactions(user_id)
         
@@ -41,7 +40,8 @@ def get_transactions():
 def filter_transactions():
     trans = TransactionManager()
     
-    user_id = session['user_id']  # get id from session
+    user_id = request.json['user_id']
+    
     filters = {
         "date_from": request.args.get("date_from"),
         "date_to": request.args.get("date_to"),
@@ -52,6 +52,7 @@ def filter_transactions():
     }
 
     try:
+        check_if_data_is_not_None([user_id])
         transactions = trans.filter_transactions(user_id, **filters)
         
         if len(current_app.pending_errors) > 0:
@@ -78,16 +79,15 @@ def filter_transactions():
 def add_transaction():
     trans = TransactionManager()
     
-    user_id = session['user_id']  # get id from session
     data = request.json
 
     try:
         transaction = trans.add_transaction(
-            user_id=user_id,
-            name=data['Nazwa'],
-            transaction_type=data['Typ'],
-            amount=data['Kwota'],
-            category=data["Kategoria"]
+            user_id=data['user_id'],
+            name=data['name'],
+            transaction_type=data['type'],
+            amount=data['amount'],
+            category=data["category"]
         )
         
         if len(current_app.pending_errors) > 0:

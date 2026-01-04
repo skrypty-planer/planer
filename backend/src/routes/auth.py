@@ -18,8 +18,6 @@ def login():
         check_if_data_is_not_None([username, password])
         user_id = auth.create_user(username, password)
 
-        session['user_id'] = user_id  # save current user's user_id to session for further use
-
         if len(current_app.pending_errors) > 0:
             err = {
                 'message': current_app.pending_errors[0].error,
@@ -58,9 +56,6 @@ def me():
             }
             current_app.pending_errors = []
             return jsonify(err)
-        
-        if not auth.check_if_user_is_logged_in(user_id):
-            session['user_id'] = user_id
         
         if len(current_app.pending_errors) > 0:
             err = {
