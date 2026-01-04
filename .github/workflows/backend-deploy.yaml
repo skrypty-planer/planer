@@ -11,4 +11,5 @@ jobs:
       - name: Trigger DEV deploy
         env:
           RENDER_BACKEND_DEV_HOOK: ${{ secrets.RENDER_BACKEND_DEV_HOOK }}
+          ACTIONS_STEP_DEBUG: true
         run: bash ops/backend/deploy.sh
