@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_caching import Cache
 from flask_cors import CORS
+import os
 
 from .config import DevelopmentConfig
 
@@ -30,7 +31,9 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
-    if app.config.cors_allow_all:
+    
+    cors_allow_all: bool = os.getenv("CORS_ALLOW_ALL", "true").lower() == "true"
+    if cors_allow_all:
         CORS(app)
     else:
         CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
