@@ -56,7 +56,7 @@ class TransactionManager(metaclass=Singleton):
 
     def ensure_user_data(self, user_id):
         cache = CacheManager()
-        logger.debug(f"cache:{cache.cache.items()}")
+        logger.debug(f"cache:{cache.cache}")
         user = cache.get_user(user_id)
         if not user:
             return None
