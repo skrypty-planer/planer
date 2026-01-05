@@ -3,6 +3,7 @@ from flask import session
 from ..models.user import User
 from .CacheManager import CacheManager
 from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, UNAUTHORIZED_EXCEPTION
+from ..error_handling.logger import logger
 from flask import current_app
 import re
 import urllib.parse
@@ -71,6 +72,7 @@ class AuthManager(metaclass=Singleton):
         user = User(user_id, username, password, _avatar_url=final_avatar_url)
         
         cache.set_user(user_id, user)
+        logger.debug(f"User {username} obtained user_id {user_id} and now resides in cache: {user_id in cache.cache.get("users")}")
         
         return user_id, None
 
