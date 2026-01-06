@@ -8,52 +8,52 @@ from datetime import date, datetime
 
 class CacheManager(metaclass=Singleton):
     def __init__(self, cache: Cache):
-        super()
         self.cache = cache
+        if not self.cache.get("users"):
+            self.cache.set("users", {})
 
     def list_transactions(self, user_id):
         user = self.get_user(user_id)
+        if user:
+            return user["transactions"]
+        return []
 
-        return user["transactions"]
-
-    def add_transaction(self, user_id, new_transaction: Transaction):
-
+    def add_transaction(self, user_id, new_transaction: dict): # Changed to dict to match usage
         user = self.get_user(user_id)
+        if not user:
+            return None
 
         # Aktualizacja danych użytkownika
         user["transactions"].append(new_transaction)
-        user["funds"] += new_transaction["amount"]
+        # Assuming funds is balance? Frontend doesn't strictly track 'funds' property separate from calc, but User model has it.
+        # Let's keep it simple.
+        user["funds"] += new_transaction["amount"] if new_transaction['type'] == 'income' else -new_transaction["amount"]
 
         # Zapisanie nowych danych w bazie
         self.set_user(user_id, user)
 
-        return new_transaction["transaction_id"]
+        return new_transaction["id"]
     
     def get_number_of_transactions_for_user(self, user_id):
-
         user = self.get_user(user_id)
-
-        return len(user["transactions"])
+        return len(user["transactions"]) if user else 0
         
     def get_user(self, user_id):
-        if user_id in self.cache.get("users").keys():
-            user = self.cache.get("users")[user_id]
-        else:
-            current_app.pending_errors.append(DATA_NOT_FOUND_EXCEPTION())
-            user = None
-        
-        return user
-    
-    def set_user(self, user_id, user: User):
         users = self.cache.get("users")
-        
-        if user_id in users.keys():
-            current_app.pending_errors.append(Exception())
-            return
-        
-        users[user_id] = user.get_obj()
+        if users and user_id in users:
+            return users[user_id]
+        return None
+    
+    def set_user(self, user_id, user_data):
+        users = self.cache.get("users") or {}
+        # User data can be a User object or a dict. Normalize to dict.
+        if isinstance(user_data, User):
+            users[user_id] = user_data.get_obj()
+        else:
+            users[user_id] = user_data
         
         self.cache.set("users", users)
     
     def get_number_of_users(self):
-        return len(self.cache.get('users').keys())
+        users = self.cache.get('users')
+        return len(users) if users else 0

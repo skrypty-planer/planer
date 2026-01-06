@@ -10,7 +10,7 @@ projects:
             repo: https://github.com/skrypty-planer/planer
             branch: main
             buildCommand: pip install -r backend/requirements.txt
-            startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
+            startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT backend.src.app:app
             healthCheckPath: /check/health
             envVars:
               - key: PYTHON_VERSION
@@ -25,6 +25,6 @@ projects:
             branch: main
             buildCommand: cd frontend && npm install && npm run build
             staticPublishPath: frontend/dist
-            # envVars:
-            #   - key: VITE_API_BASE_URL_DEV
-            #     value: https://<backend-dev-host>
+            envVars:
+              - key: VITE_API_BASE_URL
+                value: https://budget-planner-backend-dev-lmal.onrender.com/
