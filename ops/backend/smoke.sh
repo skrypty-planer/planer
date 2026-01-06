@@ -63,6 +63,4 @@ jq -e --arg username "$USERNAME" \
   >/dev/null \
 || { echo "Testing register endpoint failed" >&2; exit 1; }
 
-
-
 echo "Smoke test passed"
