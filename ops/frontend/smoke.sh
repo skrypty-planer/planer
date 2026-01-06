@@ -34,5 +34,6 @@ until curl -fsS "http://127.0.0.1:$PORT/" >/dev/null || [ $ATTEMPTS -eq 0 ]; do
   fi
 done
 
+
 curl -fsS "http://127.0.0.1:$PORT/" >/dev/null
 printf "Frontend smoke test passed\n"

@@ -11,7 +11,6 @@ on:
 jobs:
   deploy-dev:
     runs-on: ubuntu-latest
-    environment: dev
     steps:
       - uses: actions/checkout@v4
       - name: Trigger DEV deploy
