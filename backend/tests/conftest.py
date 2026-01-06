@@ -11,11 +11,12 @@ def client(app):
 
 @pytest.fixture
 def app():
-    app = create_app({
-        'TESTING': True
-    })
+    CacheManager.instance = None
 
-    CacheManager(Cache(app))
-    TransactionManager()
+    app = create_app({
+        'TESTING': True,
+        "CACHE_TYPE": "SimpleCache",
+        "CACHE_DEFAULT_TIMEOUT": 60,
+    })
 
     yield app
