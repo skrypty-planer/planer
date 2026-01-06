@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Start the Flask app via gunicorn from ops package
+echo "Start the Flask app via gunicorn from ops package"
 # Usage: ops/backend/start.sh [host] [port]
 HOST=${1:-0.0.0.0}
 PORT=${2:-5000}
