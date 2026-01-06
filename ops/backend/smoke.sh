@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Simple smoke test: start the app and hit /health and register
+echo "Simple smoke test: start the app and hit /health and /register"
+
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 BACKEND_DIR=$(cd "$SCRIPT_DIR/../../backend" && pwd)
 PROJECT_ROOT=$(cd "$BACKEND_DIR/.." && pwd)
