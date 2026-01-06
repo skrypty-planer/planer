@@ -72,7 +72,8 @@ class AuthManager(metaclass=Singleton):
         user = User(user_id, username, password, _avatar_url=final_avatar_url)
         
         cache.set_user(user_id, user)
-        logger.debug(f"User {username} obtained user_id {user_id} and now resides in cache: {user_id in cache.cache.get("users")}")
+        in_cache = user_id in cache.cache.get("users")
+        logger.debug(f"User {username} obtained user_id {user_id} and now resides in cache: {in_cache}")
         
         return user_id, None
 
