@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Building, previewing the frontend, then smoke testing"
+
 # Build and preview the frontend, then smoke test the app loads
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 FRONTEND_DIR=$(cd "$SCRIPT_DIR/../../frontend" && pwd)
