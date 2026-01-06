@@ -60,7 +60,7 @@ def create_app(test_config=None):
     from .utilities.CacheManager import CacheManager
     from .utilities.TransactionManager import TransactionManager
     AuthManager()
-    CacheManager(cache)
+    app.cache_manager = CacheManager(cache)
     TransactionManager()
     
     logger.info('Created singleton objects.')

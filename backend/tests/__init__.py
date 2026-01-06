@@ -1,1 +1,1 @@
-from .conftests import app, client
+from .conftest import app, client
