@@ -1,20 +1,10 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
+from ..utilities.global_utils import get_user_id
 from ..error_handling.logger import logger
 from ..error_handling.exceptions import HTTP_STATUS_CODE
 from ..utilities.TransactionManager import TransactionManager
 
 bp = Blueprint('/transactions', __name__, url_prefix='/transactions')
-
-def get_user_id():
-    # Helper to get user_id from session or arguments
-    if 'user_id' in session:
-        return session['user_id']
-    if request.args.get('user_id'):
-        return request.args.get('user_id')
-    # fallback for testing
-    if request.json and 'user_id' in request.json:
-        return request.json['user_id']
-    return None
 
 @bp.route('/summary', methods=['GET'])
 def get_summary():
@@ -48,32 +38,12 @@ def get_transactions():
     amount_max = request.args.get('amountMax')
     type_filter = request.args.get('type')
     sort = request.args.get('sort')
-
-    # Convert amount params if present (TransactionManager expects user to handle types or check inside?)
-    # TransactionManager filter_transactions expects amount_min/max as logic is there? No, I implemented cast to float there.
     
     tm = TransactionManager()
     
-    # Note: I didn't add 'type' to filter_transactions arg list in previous step! 
-    # Let me check my memory/logs of TransactionManager.
-    # Step 40 output shows filter_transactions signature:
-    # def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None):
-    # It missed 'type'. I should fix TransactionManager or handle it manually here.
-    # Ideally fix TransactionManager. But I can filter here for now or update TM.
-    # Given 'type' is a key filter, I should update TM. 
-    # But to save tool calls, I can just filter the result here or pass strict kwargs if TM supported generic kwargs.
-    # Wait, 'type' is a reserved keyword in python (sort of), but as argument name it is fine.
-    
-    # Checking TransactionManager definition in Step 40 again.
-    # Yes, it missed 'type' argument.
-    # I will proceed by getting all filtered by other params, then filtering by type locally here.
-    
     transactions = tm.filter_transactions(
-        user_id, date_from, date_to, name, category, amount_min, amount_max, sort
+        user_id, date_from, date_to, name, category, amount_min, amount_max, sort, type_filter
     )
-    
-    if type_filter:
-        transactions = [t for t in transactions if t['type'] == type_filter]
         
     return jsonify({
         'items': transactions,

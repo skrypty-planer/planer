@@ -1,10 +1,6 @@
 from .Singleton import Singleton
 from ..models.user import User
-from ..models.transaction import Transaction
-from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
 from flask_caching import Cache
-from flask import current_app
-from datetime import date, datetime
 
 class CacheManager(metaclass=Singleton):
     def __init__(self, cache: Cache):
@@ -18,15 +14,14 @@ class CacheManager(metaclass=Singleton):
             return user["transactions"]
         return []
 
-    def add_transaction(self, user_id, new_transaction: dict): # Changed to dict to match usage
+    def add_transaction(self, user_id, new_transaction: dict):
         user = self.get_user(user_id)
         if not user:
             return None
 
         # Aktualizacja danych użytkownika
         user["transactions"].append(new_transaction)
-        # Assuming funds is balance? Frontend doesn't strictly track 'funds' property separate from calc, but User model has it.
-        # Let's keep it simple.
+
         user["funds"] += new_transaction["amount"] if new_transaction['type'] == 'income' else -new_transaction["amount"]
 
         # Zapisanie nowych danych w bazie
@@ -42,6 +37,14 @@ class CacheManager(metaclass=Singleton):
         users = self.cache.get("users")
         if users and user_id in users:
             return users[user_id]
+        return None
+    
+    def get_user_by_username(self, username):
+        users = self.cache.get("users")
+        if users:
+            for user_id, user in users.items():
+                if user['username'].lower() == username.lower():
+                    return user
         return None
     
     def set_user(self, user_id, user_data):
