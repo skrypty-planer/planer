@@ -1,6 +1,4 @@
 import pytest
-from ..src.utilities.CacheManager import CacheManager
-from ..src.utilities.TransactionManager import TransactionManager
 from ..src.models.user import User
 from ..src.models.transaction import Transaction
 from datetime import datetime

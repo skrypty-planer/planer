@@ -29,7 +29,10 @@ def create_app(test_config=None):
         logger.info('Loaded configuration.')
     else:
         # load the test config if passed in
-        app.config.from_object(test_config)
+        if isinstance(test_config, dict):
+            app.config.from_mapping(test_config)
+        else:
+            app.config.from_object(test_config)
         logger.info('Loaded test configuration.')
     
     CORS(
@@ -59,8 +62,9 @@ def create_app(test_config=None):
     from .utilities.AuthManager import AuthManager
     from .utilities.CacheManager import CacheManager
     from .utilities.TransactionManager import TransactionManager
-    AuthManager()
+
     app.cache_manager = CacheManager(cache)
+    AuthManager()
     TransactionManager()
     
     logger.info('Created singleton objects.')

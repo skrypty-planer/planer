@@ -6,9 +6,14 @@ from flask_caching import Cache
 from flask import current_app
 from datetime import date, datetime
 
+print("CacheManager module imported")
+
 class CacheManager(metaclass=Singleton):
     def __init__(self, cache: Cache):
         print("INIT CacheManager", id(self))
+        import traceback
+        print("CacheManager INIT called with cache =", cache)
+        traceback.print_stack()
         self.cache = cache
         if not self.cache.get("users"):
             self.cache.set("users", {})

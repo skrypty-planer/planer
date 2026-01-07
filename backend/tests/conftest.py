@@ -1,8 +1,5 @@
 import pytest
 
-from flask_caching import Cache
-from ..src.utilities.CacheManager import CacheManager
-from ..src.utilities.TransactionManager import TransactionManager
 from ..src.app import create_app
 
 @pytest.fixture
@@ -11,12 +8,26 @@ def client(app):
 
 @pytest.fixture
 def app():
-    CacheManager.instance = None
-
     app = create_app({
         'TESTING': True,
         "CACHE_TYPE": "SimpleCache",
         "CACHE_DEFAULT_TIMEOUT": 60,
     })
 
-    yield app
+    with app.app_context():
+        yield app
+
+
+@pytest.fixture(autouse=True)
+def reset_singletons():
+    from backend.src.utilities.CacheManager import CacheManager
+    from backend.src.utilities.TransactionManager import TransactionManager
+    from backend.src.utilities.AuthManager import AuthManager
+
+    CacheManager._instances = {}
+    TransactionManager._instances = {}
+    AuthManager._instances = {}
+    yield
+    CacheManager._instances = {}
+    TransactionManager._instances = {}
+    AuthManager._instances = {}
