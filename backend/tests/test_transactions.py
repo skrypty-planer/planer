@@ -69,3 +69,244 @@ def test_get_summary_success(client, app):
 
     assert response.status_code == 200
     assert 'summary' in data
+
+
+# Recent transactions
+def test_get_recent_unauthorized(client):
+    response = client.get(
+        '/transactions/recent',
+        json={}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 401
+    assert data['message'] == 'Unauthorized'
+
+
+def test_get_recent_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        add_test_transaction(app, user_id=1, name="Tx 1")
+        add_test_transaction(app, user_id=1, name="Tx 2")
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.get('/transactions/recent')
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'transactions' in data
+    assert isinstance(data['transactions'], list)
+    assert len(data['transactions']) >= 2
+
+
+# Get transactions
+def test_get_transactions_unauthorized(client):
+    response = client.get(
+        '/transactions/get',
+        json={}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 401
+    assert data['message'] == 'Unauthorized'
+
+
+def test_get_transactions_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        add_test_transaction(app, user_id=1, name="Salary", tx_type="income")
+        add_test_transaction(app, user_id=1, name="Groceries", tx_type="expense")
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.get(
+        '/transactions/get',
+        query_string={'type': 'expense'}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'items' in data
+    assert 'meta' in data
+    assert isinstance(data['items'], list)
+    assert data['meta']['total'] == len(data['items'])
+
+    for tx in data['items']:
+        assert tx['type'] == 'expense'
+
+
+# Get charts
+def test_get_charts_unauthorized(client):
+    response = client.get(
+        '/transactions/charts',
+        json={}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 401
+    assert data['message'] == 'Unauthorized'
+
+
+def test_get_charts_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        add_test_transaction(app, user_id=1)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.get('/transactions/charts')
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'charts' in data
+
+
+# Categories breakdown
+def test_get_categories_unauthorized(client):
+    response = client.get(
+        '/transactions/categories',
+        json={}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 401
+    assert data['message'] == 'Unauthorized'
+
+
+def test_get_categories_default_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        add_test_transaction(app, user_id=1, category="Food")
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.get('/transactions/categories')
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'breakdown' in data
+
+
+def test_get_categories_with_params(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        add_test_transaction(app, user_id=1, tx_type="income", category="Salary")
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.get(
+        '/transactions/categories',
+        query_string={'type': 'income', 'period': 'yearly'}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'breakdown' in data
+
+
+# Store transaction
+def test_add_transaction_unauthorized(client):
+    response = client.post(
+        '/transactions/store',
+        json={}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 401
+    assert data['message'] == 'Unauthorized'
+
+
+def test_add_transaction_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.post(
+        '/transactions/store',
+        json={
+            'name': 'Bonus',
+            'amount': 500,
+            'type': 'income',
+            'category': 'Work'
+        }
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert 'transaction' in data
+
+
+# Update transaction
+def test_update_transaction_not_found(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.put(
+        '/transactions/update/invalid-id',
+        json={'amount': 999}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert data['message'] == 'Not found'
+
+
+def test_update_transaction_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        tx = add_test_transaction(app, user_id=1, amount=100)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.put(
+        f'/transactions/update/{tx.id}',
+        json={'amount': 200}
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data['transaction']['amount'] == 200
+
+
+# Delete transaction
+def test_delete_transaction_not_found(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.delete('/transactions/delete/invalid-id')
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert data['message'] == 'Not found or failed'
+
+
+def test_delete_transaction_success(client, app):
+    with app.app_context():
+        add_test_user(app, user_id=1)
+        tx = add_test_transaction(app, user_id=1)
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+
+    response = client.delete(
+        f'/transactions/delete/{tx.id}'
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data['success'] is True
