@@ -11,7 +11,10 @@ Architektura projektu
 
 
 Testy: pytest (backend)
+
+### Project structure
 ---
+```
 ops/
   backend/
     deploy.sh
@@ -110,7 +113,9 @@ Główne elementy
  -TransactionManager – logika biznesowa transakcji
  -CacheManager – cache aplikacyjny
  -Error handling – centralna obsługa wyjątków i logowania
- 
+ ```
+
+---
 Uruchomienie lokalne
 ```
 cd backend
