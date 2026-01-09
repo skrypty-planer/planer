@@ -132,12 +132,22 @@ python src/app.py
 ```
 ---
 ### Frontend (Vue 3 + Vite)
-Funkcjonalności
- -logowanie / rejestracja
- -lista transakcji
- -dodawanie i edycja transakcji
- -analityka (wykresy)
- -SPA z routingiem
+
+- Kod: `frontend/`
+- Główne pliki: `index.html`, `src/App.vue`, `src/components/TransactionFormModal.vue`, `src/components/EditProfileModal.vue`, `src/components/PieChart.vue`  
+- Konfiguracja: `frontend/vite.config.js`  
+- Przykład zmiennych środowiskowych: `frontend/.env.example`  
+- Skrypty: `ops/frontend/`
+  - `smoke.sh` → test smoke (mockowany, bez sieci/preview); build jest walidowany w etapie Build  
+  - `deploy.sh` → wywołuje Render Deploy Hooks dla środowisk dev/prod  
+
+**Uruchomienie lokalne (frontend):**
+```bash
+cd frontend
+cp .env.example .env  # opcjonalnie ustaw VITE_API_BASE_URL=http://localhost:5000
+npm i
+npm run dev
+```
 
 ---
 ### GitHub Actions (CI/CD)
