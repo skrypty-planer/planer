@@ -1,10 +1,8 @@
 from .Singleton import Singleton
-from flask import session
+from flask import session, current_app
 from ..models.user import User
 from .CacheManager import CacheManager
-from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION, UNAUTHORIZED_EXCEPTION
 from ..error_handling.logger import logger
-from flask import current_app
 import re
 import urllib.parse
 import random
@@ -13,9 +11,14 @@ class AuthManager(metaclass=Singleton):
     def check_if_user_is_logged_in(self, user_id):
         return session.get('user_id') == user_id
     
-    def check_if_user_exists(self, user_id):
+    def check_if_user_exists(self, user_id = None, username = None):
         cache = CacheManager()
-        return cache.get_user(user_id) is not None
+        if user_id:
+            return cache.get_user(user_id) is not None
+        elif username:
+            return cache.get_user_by_username(username) is not None
+        else:
+            return False
 
     def validate_password(self, password):
         if len(password) < 8:
@@ -35,12 +38,7 @@ class AuthManager(metaclass=Singleton):
             '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#FF5722'
         ]
         
-        # Simple hash
-        hash_val = 0
-        for char in username:
-            hash_val = ord(char) + ((hash_val << 5) - hash_val)
-        
-        color = colors[abs(hash_val) % len(colors)]
+        color = colors[random.randint(0, len(colors) - 1)]
         initial = username[0].upper() if username else '?'
 
         svg = f'''
@@ -54,11 +52,8 @@ class AuthManager(metaclass=Singleton):
     def register_user(self, username, password, avatar_url=None):
         cache = CacheManager()
         
-        # Check if user exists (by username)
-        users = cache.cache.get("users") or {}
-        for uid, u in users.items():
-            if u['username'].lower() == username.lower():
-                return None, 'Użytkownik o tej nazwie już istnieje'
+        if cache.get_user_by_username(username):
+            return None, 'Użytkownik o tej nazwie już istnieje'
 
         valid, error = self.validate_password(password)
         if not valid:
@@ -81,16 +76,11 @@ class AuthManager(metaclass=Singleton):
         cache = CacheManager()
         users = cache.cache.get("users") or {}
         
-        found_user = None
-        for uid, u in users.items():
-            if u['username'].lower() == username.lower():
-                found_user = u
-                break
+        found_user = cache.get_user_by_username(username)
         
         if not found_user:
             return None, 'Nieprawidłowa nazwa użytkownika lub hasło'
         
-        # Plain text comparison as per simulation
         if found_user['password'] != password:
             return None, 'Nieprawidłowa nazwa użytkownika lub hasło'
             
@@ -140,9 +130,3 @@ class AuthManager(metaclass=Singleton):
 
         cache.set_user(user_id, user)
         return True, None
-
-    # Deprecated but kept for compatibility during transition if needed, though strictly replacing.
-    def create_user(self, username, password, avatar_url = ''):
-        # This was the old unsafe method. Mapping to register for safety or just removing.
-        # But previous code used it. I should replace usages.
-        return self.register_user(username, password, avatar_url)[0]
