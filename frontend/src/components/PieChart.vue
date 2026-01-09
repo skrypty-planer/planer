@@ -52,11 +52,9 @@ const colors = [
 
 const segments = computed(() => {
   let currentOffset = 0
-  // Calculate total value to normalize
   const totalValue = props.data.reduce((sum, item) => sum + item.percentage, 0)
   
   return props.data.map(item => {
-    // Normalize percentage if total is not 100 (avoid division by zero)
     const normalizedPercentage = totalValue > 0 ? (item.percentage / totalValue) * 100 : 0
     const segment = {
       ...item,

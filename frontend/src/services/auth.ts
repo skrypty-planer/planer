@@ -1,4 +1,4 @@
-// Authentication service API
+// API
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export interface User {
@@ -17,7 +17,6 @@ export interface UserSession {
 
 const SESSION_KEY = 'budget_planner_session';
 
-// Helper for requests
 async function request(endpoint: string, options: RequestInit = {}) {
     const res = await fetch(`${API_URL}${endpoint}`, {
         ...options,
