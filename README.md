@@ -190,91 +190,46 @@ Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne 
 
 
 ---
-Render deployment
-Option A — Render Blueprint (rekomendowane):
-Plik: render.yaml zawiera definicje zarówno backendu (Web Service – Flask), jak i frontendu (Static Site – Vue 3).
 
+## Render deployment
 
-W panelu Render należy utworzyć nowy Blueprint i wskazać repozytorium projektu.
+### Option A — Render Blueprint (rekomendowane)
+- Plik `render.yaml` zawiera definicje zarówno backendu (Web Service – Flask), jak i frontendu (Static Site – Vue 3).  
+- W panelu Render należy utworzyć nowy Blueprint i wskazać repozytorium projektu.
 
+**Backend service:**
+- Komenda budowania: instalacja zależności z pliku `backend/requirements.txt`  
+- Komenda startowa: uruchomienie aplikacji Flask za pomocą serwera Gunicorn  
+- Ścieżka health check: `/health`  
+- Zmienne środowiskowe: zdefiniowane w `render.yaml` (konfiguracja aplikacji, ustawienia CORS itp.), możliwe do edycji w panelu Render  
 
-Backend service:
+**Frontend service (Static Site):**
+- Komenda budowania: instalacja zależności oraz zbudowanie wersji produkcyjnej aplikacji Vue  
+- Katalog publikacji: `frontend/dist`  
+- Po wdrożeniu backendu należy ustawić zmienną `VITE_API_BASE_URL` wskazującą na publiczny adres backendu (np. `https://budget-planner-backend.onrender.com`)  
 
+### Option B — Manual services
 
-Komenda budowania: instalacja zależności z pliku backend/requirements.txt
+**Backend (Web Service):**
+- Utworzenie nowej usługi typu Web Service z repozytorium projektu  
+- Użycie tych samych komend budowania i uruchamiania co w opcji Blueprint  
+- Konfiguracja ścieżki health check: `/health`  
 
+**Frontend (Static Site):**
+- Utworzenie nowej usługi typu Static Site  
+- Zbudowanie aplikacji frontendowej z katalogu `frontend`  
+- Publikacja katalogu `frontend/dist`  
+- Ustawienie zmiennej `VITE_API_BASE_URL` na publiczny adres backendu  
 
-Komenda startowa: uruchomienie aplikacji Flask za pomocą serwera Gunicorn
-
-
-Ścieżka health check: /health
-
-
-Zmienne środowiskowe: zdefiniowane w render.yaml (konfiguracja aplikacji, ustawienia CORS itp.), możliwe do edycji w panelu Render
-
-
-Frontend service (Static Site):
-
-
-Komenda budowania: instalacja zależności oraz zbudowanie wersji produkcyjnej aplikacji Vue
-
-
-Katalog publikacji: frontend/dist
-
-
-Po wdrożeniu backendu należy ustawić zmienną VITE_API_BASE_URL wskazującą na publiczny adres backendu (np. https://budget-planner-backend.onrender.com)
-
-
-Option B — Manual services:
-Backend (Web Service):
-
-
-Utworzenie nowej usługi typu Web Service z repozytorium projektu
-
-
-Użycie tych samych komend budowania i uruchamiania co w opcji Blueprint
-
-
-Konfiguracja ścieżki health check /health
-
-
-Frontend (Static Site):
-
-
-Utworzenie nowej usługi typu Static Site
-
-
-Zbudowanie aplikacji frontendowej z katalogu frontend
-
-
-Publikacja katalogu frontend/dist
-
-
-Ustawienie zmiennej VITE_API_BASE_URL na publiczny adres backendu
-
-
-After first deploy:
-Wejście na publiczny adres frontendu
-
-
-Rejestracja lub logowanie użytkownika
-
-
-Sprawdzenie poprawności działania aplikacji planera budżetu poprzez:
-
-
-pobranie listy transakcji,
-
-
-dodanie nowej transakcji,
-
-
-wyświetlenie podsumowań oraz widoków analitycznych
-
+### After first deploy
+1. Wejście na publiczny adres frontendu  
+2. Rejestracja lub logowanie użytkownika  
+3. Sprawdzenie poprawności działania aplikacji planera budżetu poprzez:
+   - pobranie listy transakcji,  
+   - dodanie nowej transakcji,  
+   - wyświetlenie podsumowań oraz widoków analitycznych  
 
 Prawidłowe wykonanie powyższych kroków potwierdza poprawną konfigurację oraz wdrożenie aplikacji planera budżetu.
-
-
 
 ---
 ### API usage examples
@@ -298,32 +253,25 @@ curl -X DELETE 'http://localhost:5000/transactions/delete/456?user_id=123'
 #Pobranie podziału transakcji po kategoriach
 curl 'http://localhost:5000/transactions/categories?user_id=123&type=expense&period=monthly'
 ```
-makefile
-Skopiuj kod
+
 Responses:
+```
 {
 "transactions": [
 { "id": "1", "name": "Lunch", "amount": 50, "date": "2026-01-09", "type": "expense", "category": "Jedzenie" },
-{ "id": "2", "name": "Salary", "amount": 5000, "date": "2026-01-01", "type": "income", "category": "Pensja" }
-]
-}
-
-{
-"summary": {
+{ "id": "2", "name": "Salary", "amount": 5000, "date": "2026-01-01", "type": "income", "category": "Pensja"}]}
+{"summary": {
 "incomeDaily": 5000,
 "expenseDaily": 50,
 "balanceDaily": 4950,
 "incomeMonthly": 5000,
 "expenseMonthly": 50,
-"balanceMonthly": 4950
-}
-}
+"balanceMonthly": 4950}}
 
 {"breakdown": [{ "category": "Jedzenie", "amount": 200, "percentage": 40 },
 { "category": "Transport", "amount": 300, "percentage": 60 }]}
+```
 
-scss
-Skopiuj kod
 Errors (HTTP 400):
 ```
 { "error": "Invalid user_id, transaction ID, or filter parameters" }
