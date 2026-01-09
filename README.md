@@ -100,6 +100,9 @@ frontend/
 render.yaml
 README.md
 
+
+ ```
+---
 ### Backend (Flask)
 Główne elementy
  -Routes:
@@ -113,8 +116,6 @@ Główne elementy
  -TransactionManager – logika biznesowa transakcji
  -CacheManager – cache aplikacyjny
  -Error handling – centralna obsługa wyjątków i logowania
- ```
-
 ---
 Uruchomienie lokalne
 ```
@@ -326,33 +327,32 @@ Errors (HTTP 400):
 
 ---
 ### Notes
-- **Singleton pattern** is implemented via a metaclass in `backend/src/utilities/Singleton.py`. All classes that require a single shared instance use this metaclass and expose access through `ClassName.get_instance()`.
-- **Classes using Singleton in `src/utilities`:**
-  - `AuthManager.py` – manages authentication logic, token validation, and user sessions.
-  - `CacheManager.py` – handles in-memory caching of frequently accessed data (e.g., transaction summaries).
-  - `TransactionManager.py` – centralizes transaction operations such as adding, updating, and deleting transactions while ensuring consistent state.
-  - `Cache.py` – supports caching utilities and integration with `CacheManager`.
-  - Any other class in `src/utilities` that needs a global shared instance follows the Singleton metaclass pattern.
-- **Default CORS** allows all origins; to restrict, set `CORS_ALLOW_ALL=false` and specify allowed origins in `CORS_ORIGINS`.
-- **Transaction endpoints** validate input strictly: amounts must be numbers, dates in `YYYY-MM-DD` format, and categories must match predefined lists.
-- **Dashboard, charts, and category breakdown endpoints** provide aggregated data; filters can be applied via query parameters such as `dateFrom`, `dateTo`, `type`, and `category`.
-- **CI smoke tests** rely on `curl` and `jq` (installed in the workflow) to check basic endpoint availability and correct JSON responses.
-
-
+- **Wzorzec Singleton** jest implementowany za pomocą metaklasy w `backend/src/utilities/Singleton.py`. Wszystkie klasy wymagające pojedynczej instancji używają tej metaklasy i udostępniają instancję poprzez `ClassName.get_instance()`.
+- **Klasy korzystające z Singleton w `src/utilities`:**
+  - `AuthManager.py` – zarządza logiką autoryzacji, walidacją tokenów i sesjami użytkowników.
+  - `CacheManager.py` – obsługuje cache w pamięci dla często pobieranych danych (np. podsumowania transakcji).
+  - `TransactionManager.py` – centralizuje operacje na transakcjach (dodawanie, aktualizacja, usuwanie) i zapewnia spójny stan.
+  - `Cache.py` – wspiera funkcje cache i integrację z `CacheManager`.
+  - Każda inna klasa w `src/utilities`, która potrzebuje globalnej instancji, stosuje metaklasę Singleton.
+- **Domyślne CORS** pozwala na wszystkie pochodzenia; aby ograniczyć, ustaw `CORS_ALLOW_ALL=false` i określ dozwolone źródła w `CORS_ORIGINS`.
+- **Endpointy transakcji** rygorystycznie walidują dane wejściowe: kwoty muszą być liczbami, daty w formacie `YYYY-MM-DD`, a kategorie muszą odpowiadać zdefiniowanym listom.
+- **Dashboard, wykresy i podział po kategoriach** zwracają dane zagregowane; filtry można stosować przez parametry zapytania, takie jak `dateFrom`, `dateTo`, `type` i `category`.
+- **Testy smoke CI** używają `curl` i `jq` (zainstalowane w workflow) do sprawdzenia dostępności endpointów i poprawności odpowiedzi JSON.
 
 ---
+
 ## Prerequisites
-- Two environments on Render created from this repo (via `render.yaml` Blueprint or manual setup):
-  - **Dev**: services named like `budget-planner-backend-dev` and `budget-planner-frontend-dev` on branch `dev`
-  - **Prod**: services named like `budget-planner-backend-prod` and `budget-planner-frontend-prod` on branch `main`
-- Branch mapping: `dev` → Dev environment, `main` → Prod environment
-- Node.js (v18+) and npm/yarn installed for frontend
-- Python 3.11+ with virtual environment for backend
-- Required packages installed:
+- Dwa środowiska na Render utworzone z tego repozytorium (przez Blueprint w `render.yaml` lub ręcznie):
+  - **Dev**: usługi o nazwach `budget-planner-backend-dev` i `budget-planner-frontend-dev` na gałęzi `dev`
+  - **Prod**: usługi o nazwach `budget-planner-backend-prod` i `budget-planner-frontend-prod` na gałęzi `main`
+- Mapowanie gałęzi: `dev` → środowisko Dev, `main` → środowisko Prod
+- Node.js (v18+) i npm/yarn zainstalowane dla frontendu
+- Python 3.11+ z virtualenv dla backendu
+- Zainstalowane wymagane pakiety:
   - Backend: `pip install -r backend/requirements.txt`
-  - Frontend: `npm install` or `yarn install` in `frontend/`
-- Access to environment variables:
-  - Backend: `.env` or Render environment variables for database, CORS, and other configs
-  - Frontend: `.env` or `.env.local` with `VITE_API_BASE_URL` pointing to the backend
-- Optional but recommended: `curl` and `jq` for running smoke tests locally
- used by the Build stages.
+  - Frontend: `npm install` lub `yarn install` w katalogu `frontend/`
+- Dostęp do zmiennych środowiskowych:
+  - Backend: `.env` lub zmienne Render dla bazy danych, CORS i innych ustawień
+  - Frontend: `.env` lub `.env.local` z `VITE_API_BASE_URL` wskazującym backend
+- Opcjonalnie, ale zalecane: `curl` i `jq` do uruchamiania testów smoke lokalnie, używane w etapach build.
+
