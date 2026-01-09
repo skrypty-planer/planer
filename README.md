@@ -266,31 +266,26 @@ Prawidłowe wykonanie powyższych kroków potwierdza poprawną konfigurację ora
 
 ---
 ### API usage examples
-Pobranie podsumowania dashboardu dla użytkownika
+```
+#Pobranie podsumowania dashboardu dla użytkownika
 curl 'http://localhost:5000/transactions/summary?user_id=123'
-
-Pobranie ostatnich 5 transakcji
+#Pobranie ostatnich 5 transakcji
 curl 'http://localhost:5000/transactions/recent?user_id=123'
-
-Pobranie wszystkich transakcji z filtrowaniem
+#Pobranie wszystkich transakcji z filtrowaniem
 curl 'http://localhost:5000/transactions/get?user_id=123&dateFrom=2026-01-01&dateTo=2026-01-09&type=expense&category=Jedzenie'
-
-Dodanie nowej transakcji
+#Dodanie nowej transakcji
 curl -X POST 'http://localhost:5000/transactions/store'
 -H 'Content-Type: application/json'
 -d '{"user_id":"123","name":"Lunch","amount":50,"date":"2026-01-09","type":"expense","category":"Jedzenie"}'
-
-Aktualizacja transakcji
+#Aktualizacja transakcji
 curl -X PUT 'http://localhost:5000/transactions/update/456'
 -H 'Content-Type: application/json'
 -d '{"amount":55}'
-
-Usunięcie transakcji
+#Usunięcie transakcji
 curl -X DELETE 'http://localhost:5000/transactions/delete/456?user_id=123'
-
-Pobranie podziału transakcji po kategoriach
+#Pobranie podziału transakcji po kategoriach
 curl 'http://localhost:5000/transactions/categories?user_id=123&type=expense&period=monthly'
-
+```
 makefile
 Skopiuj kod
 Responses:
@@ -312,18 +307,15 @@ Responses:
 }
 }
 
-{
-"breakdown": [
-{ "category": "Jedzenie", "amount": 200, "percentage": 40 },
-{ "category": "Transport", "amount": 300, "percentage": 60 }
-]
-}
+{"breakdown": [{ "category": "Jedzenie", "amount": 200, "percentage": 40 },
+{ "category": "Transport", "amount": 300, "percentage": 60 }]}
 
 scss
 Skopiuj kod
 Errors (HTTP 400):
+```
 { "error": "Invalid user_id, transaction ID, or filter parameters" }
-
+```
 
 ---
 ### Notes
