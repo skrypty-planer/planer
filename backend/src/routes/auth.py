@@ -11,8 +11,8 @@ def register():
     username = data.get('username')
     password = data.get('password')
     avatar_url = data.get('avatarUrl')
-    
-    if not username or not password:
+
+    if username is None or password is None:
         return jsonify({'message': 'Brak wymaganych danych', 'status_code': 400})
 
     auth = AuthManager()
@@ -68,8 +68,8 @@ def guest_login():
 
 @bp.route('/logout', methods=['POST'])
 def logout():
-    session.pop('user_id', None)
-    return jsonify({'status_code': HTTP_STATUS_CODE.OK})
+    logged_out_user_id = session.pop('user_id', None)
+    return jsonify({'status_code': HTTP_STATUS_CODE.OK, 'user_id': logged_out_user_id})
 
 @bp.route('/me', methods=['GET'])
 def me():
@@ -105,6 +105,7 @@ def update_profile():
         return jsonify({'message': 'Unauthorized', 'status_code': 401})
         
     user_id = session['user_id']
+
     data = request.json
     
     auth = AuthManager()

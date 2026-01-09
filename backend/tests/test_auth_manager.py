@@ -50,26 +50,19 @@ def test_login(app: Flask, client: FlaskClient, auth: AuthManager):
         assert login_res.status_code == 200
         assert auth.check_if_user_is_logged_in( register_res.json['user']['id'] )
 
-def test_validate_password(auth: AuthManager):
-    status, message = auth.validate_password('zaq1@WSX')
-    assert status == True
-    assert message == None
-    
-    status, message = auth.validate_password('z')
-    assert status == False
-    assert message == 'Hasło musi mieć co najmniej 8 znaków'
 
-    status, message = auth.validate_password('zaq1@wsx')
-    assert status == False
-    assert message == 'Hasło musi zawierać co najmniej jedną dużą literę'
+@pytest.mark.parametrize("password, expected_valid, expected_message", [
+    ('zaq1@WSX', True, None),
+    ('z', False, 'Hasło musi mieć co najmniej 8 znaków'),
+    ('zaq1@wsx', False, 'Hasło musi zawierać co najmniej jedną dużą literę'),
+    ('zaq@WSXz', False, 'Hasło musi zawierać co najmniej jedną cyfrę'),
+    ('zaq1WSXz', False, 'Hasło musi zawierać co najmniej jeden znak specjalny'),
+])
+def test_validate_password(auth: AuthManager, password, expected_valid, expected_message):
+    status, message = auth.validate_password(password)
+    assert status == expected_valid
+    assert message == expected_message
 
-    status, message = auth.validate_password('zaq@WSXz')
-    assert status == False
-    assert message == 'Hasło musi zawierać co najmniej jedną cyfrę'
-
-    status, message = auth.validate_password('zaq1WSXz')
-    assert status == False
-    assert message == 'Hasło musi zawierać co najmniej jeden znak specjalny'   
 
 def test_generate_avatar(auth: AuthManager):
     avatar = auth.generate_avatar('test')
@@ -96,4 +89,52 @@ def test_register_user(app: Flask, client: FlaskClient, auth: AuthManager, cache
         assert message == 'Hasło musi mieć co najmniej 8 znaków'
         assert cache.get_user_by_username('test2') is None
 
-def test_generate_avatar
+
+
+def test_login_guest(auth: AuthManager, cache: CacheManager):
+    guest_id = auth.login_guest()
+    assert guest_id == 'guest-user'
+    
+    user = cache.get_user(guest_id)
+    assert user is not None
+    assert user['username'] == 'Gość'
+    
+    guest_id_2 = auth.login_guest()
+    assert guest_id_2 == guest_id
+    user_2 = cache.get_user(guest_id)
+    assert user_2 == user
+
+def test_update_profile(app: Flask, client: FlaskClient, auth: AuthManager, cache: CacheManager):
+    with client:
+        user_id, _ = auth.register_user('update_test', 'zaq1@WSX')
+        assert user_id is not None
+
+        success, message = auth.update_profile(user_id, username='test')
+        assert success is True
+        assert message is None
+        user = cache.get_user(user_id)
+        assert user['username'] == 'test'
+        
+        auth.register_user('conflict_user', 'zaq1@WSX')
+        success, message = auth.update_profile(user_id, username='conflict_user')
+        assert success is False
+        assert message == 'Nazwa użytkownika jest już zajęta'
+        
+        success, message = auth.update_profile(user_id, password='newPassword1!')
+        assert success is True
+        user = cache.get_user(user_id)
+        assert user['password'] == 'newPassword1!'
+        
+        success, message = auth.update_profile(user_id, password='weak')
+        assert success is False
+        assert message == 'Hasło musi mieć co najmniej 8 znaków' # First check
+        
+        new_avatar = 'http://example.com/avatar.png'
+        success, message = auth.update_profile(user_id, avatar_url=new_avatar)
+        assert success is True
+        user = cache.get_user(user_id)
+        assert user['avatar_url'] == new_avatar
+        
+        success, message = auth.update_profile('non-existent', username='ghost')
+        assert success is False
+        assert message == 'Użytkownik nie znaleziony'

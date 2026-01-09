@@ -22,6 +22,6 @@ def get_user_id():
     if request.args.get('user_id'):
         return request.args.get('user_id')
     # fallback for testing
-    if request.json and 'user_id' in request.json:
+    if request.is_json and request.json and 'user_id' in request.json:
         return request.json['user_id']
     return None
