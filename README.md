@@ -1,395 +1,434 @@
-### Password Generator App (Flask backend + Vue frontend)
+### Bugdet Planner (Flask backend + Vue frontend)
 
-A minimal full‑stack password generator:
-- Backend: Python Flask with a `@singleton`-based Singleton pattern and `/api/v1/password` endpoint
-- Frontend: Vue 3 + Vite, calling the backend API
-- CI: GitHub Actions for backend and frontend (tests, build, smoke)
-- CD: Deploy pipelines (dev/prod) triggering Render deploy hooks via bash scripts
-- Render: `render.yaml` blueprint for easy provisioning
+Budget Planner – Full-stack Web Application
+Full-stackowa aplikacja webowa typu planer budżetu, umożliwiająca użytkownikom zarządzanie finansami osobistymi: rejestrowanie transakcji, analizę wydatków oraz wizualizację danych finansowych.
+ Projekt został zrealizowany w architekturze klient–serwer z wykorzystaniem Python Flask (backend) oraz Vue 3 + Vite + TypeScript (frontend), wraz z pełnym pipeline’em CI/CD.
+Architektura projektu
+Backend: Flask (Python), architektura warstwowa, wzorce projektowe (Singleton, Managerowie)
 
+
+Frontend: Vue 3, Vite, TypeScript, komponenty SPA
+
+
+CI/CD: GitHub Actions (testy, build, smoke)
+
+
+CD / Hosting: Render (deploy hooks + render.yaml)
+
+
+Testy: pytest (backend)
 ---
+ops/
+  backend/
+    deploy.sh
+    smoke.sh
+    start.sh
+    test.sh
+  frontend/
+    deploy.sh
+    smoke.sh
 
-### Architecture highlights
-- Singleton pattern implemented via `@singleton` decorator in `backend/decorators.py`.
-  - Classes that need singletons are annotated with `@singleton` and must be accessed using `ClassName.get_instance()`.
-  - Implemented singletons:
-    - `backend/config.py` → `Config.get_instance()`
-    - `backend/services/password_service.py` → `PasswordService.get_instance()`
-- Flask app factory in `backend/app.py` with endpoints:
-  - `GET /health` → `{ status: "ok" }`
-  - `GET /api/v1/password` → `{ password: "..." }`
-    - Query params: `length`, `lowercase`, `uppercase`, `digits`, `symbols` (booleans accepted: `1/0`, `true/false`, `yes/no`, `on/off`).
-- CORS enabled (allow all by default; configurable via env vars).
-
----
-
-### Backend (Python/Flask)
-- Code: `backend/`
-- Entrypoint: `backend/app.py` (WSGI app `backend.app:app`)
-- Requirements: `backend/requirements.txt`
-- Scripts: `ops/backend/`
-  - `start.sh` → install deps and run gunicorn
-  - `test.sh` → install deps and run pytest
-  - `smoke.sh` → start server and validate `/health` and `/api/v1/password`
-  - `deploy-*.sh` → call Render deploy hooks for dev/prod
-
-Local run (backend):
-```
-# from repo root
-bash ops/backend/start.sh 0.0.0.0 5000
-# or for quick dev: python -m flask --app backend.app:app run -p 5000
-```
-
-Unit tests:
-```
-bash ops/backend/test.sh
-```
-
-Smoke test:
-```
-PORT=5050 bash ops/backend/smoke.sh
-```
-
-Backend environment variables (optional):
-- `HOST` (default `0.0.0.0`)
-- `PORT` (default `5000`)
-- `FLASK_DEBUG` (default `false`)
-- `CORS_ALLOW_ALL` (default `true`)
-- `CORS_ORIGINS` (comma-separated, used when `CORS_ALLOW_ALL=false`)
-- `PW_DEFAULT_LENGTH` (default `16`)
-- `PW_MIN_LENGTH` (default `4`)
-- `PW_MAX_LENGTH` (default `128`)
-- `PW_ALLOW_LOWERCASE|UPPERCASE|DIGITS|SYMBOLS` (all default `true`)
-
----
-
-### Frontend (Vue 3 + Vite)
-- Code: `frontend/`
-- Main files: `index.html`, `src/App.vue`, `src/components/PasswordGenerator.vue`
-- Config: `frontend/vite.config.js`
-- Env example: `frontend/.env.example`
-- Scripts: `ops/frontend/`
-  - `smoke.sh` → mocked smoke only (no network/preview); build is validated in the Build stage
-  - `deploy-*.sh` → call Render deploy hooks for dev/prod
-  - `slot-swap-sim.sh` → simulate blue/green slot switching (prepare/promote/rollback)
-  - `test-functional-sim.sh` → simulate functional tests (~60s default)
-  - `test-performance-sim.sh` → simulate performance tests (~60s default)
-
-Local run (frontend):
-```
-cd frontend
-cp .env.example .env  # optionally set VITE_API_BASE_URL=http://localhost:5000
-npm i
-npm run dev
-```
-The app expects `VITE_API_BASE_URL` to point to the backend (defaults to `http://localhost:5000`).
-
-Build locally:
-```
-npm run build
-npm run preview
-```
-
----
-
-### GitHub Actions (CI/CD)
-Workflows are under `.github/workflows/`:
-- `backend-ci.yml`:
-  - Python 3.14
-  - Runs `ops/backend/test.sh` and `ops/backend/smoke.sh`
-- `frontend-ci.yml`:
-  - Node 20
-  - Runs `ops/frontend/smoke.sh`
-- `backend-deploy.yml` and `frontend-deploy.yml`:
-  - Trigger on pushes to branches: `dev`, `main`
-  - Call corresponding `deploy-*.sh` in `ops/` with Render deploy hooks
-
-Set GitHub repository secrets for deploy hooks:
-- Backend:
-  - `RENDER_BACKEND_DEV_HOOK`
-  - `RENDER_BACKEND_PROD_HOOK`
-- Frontend:
-  - `RENDER_FRONTEND_DEV_HOOK`
-  - `RENDER_FRONTEND_PROD_HOOK`
-
-How to obtain Render Deploy Hooks:
-- In Render dashboard → Your service → Settings → Deploy hooks → Create Hook.
-- Paste the hook URLs into GitHub → Settings → Secrets and variables → Actions → New repository secret.
-
-Branch to environment mapping:
-- `dev` branch → DEV hooks
-- `main` branch → PROD hooks
-
----
-
-### Render deployment
-Option A — Render Blueprint (recommended):
-- File: `render.yaml` includes both backend (web) and frontend (static) services.
-- In Render, create a Blueprint from your repo.
-- Backend service:
-  - Build command: `pip install -r backend/requirements.txt`
-  - Start command: `gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app`
-  - Health check: `/health`
-  - Env vars: already shown in `render.yaml` (you can customize).
-- Frontend service (Static Site):
-  - Build command: `cd frontend && npm ci && npm run build`
-  - Publish directory: `frontend/dist`
-  - After backend is deployed, set `VITE_API_BASE_URL` to the backend’s public URL (e.g., `https://password-generator-backend.onrender.com`).
-
-Option B — Manual services:
-- Create a new Web Service for backend (from repo):
-  - Root directory
-  - Build command and Start command as above
-  - Health check path `/health`
-- Create a Static Site for frontend:
-  - Build command: `cd frontend && npm ci && npm run build`
-  - Publish `frontend/dist`
-  - Set `VITE_API_BASE_URL` to backend URL
-
-After first deploy:
-- Visit the frontend URL; generating a password should call the backend API and display the result.
-
----
-
-### API usage examples
-```
-# Default options
-curl 'http://localhost:5000/api/v1/password'
-
-# Custom options
-curl 'http://localhost:5000/api/v1/password?length=24&digits=true&symbols=true&uppercase=true&lowercase=false'
-```
-Responses:
-```
-{ "password": "Ab3..." }
-```
-Errors (HTTP 400):
-```
-{ "error": "length must be between 4 and 128" }
-```
-
----
-
-### Project structure
-```
 backend/
-  __init__.py
-  app.py
-  config.py
-  decorators.py
-  requirements.txt
-  services/
+  src/
+    error_handling/
+      exception.py
+      logger.py
+    models/
+      transaction.py
+      user.py
+    routes/
+      auth.py
+      health.py
+      transactions.py
+    utilities/
+      AuthManager.py
+      CacheManager.py
+      Singleton.py
+      TransactionManager.py
+      global_utils.py
     __init__.py
-    password_service.py
+    app.py
+    config.py
   tests/
-    test_password_service.py
+    test_auth.py
+    test_auth_manager.py
+    test_cache.py
+    test_cache_manager.py
+    test_factory.py
+    test_flask_importer.py
+    test_global_utils.py
+    test_transaction_manager.py
+  requirements.txt
+  pyproject.toml
+  pytest.ini
+
 frontend/
+  public/
+  src/
+    components/
+      AppHeader.vue
+      AppFooter.vue
+      MenuNav.vue
+      Modal.vue
+      PieChart.vue
+      TransactionFormModal.vue
+      EditProfileModal.vue
+      EmptyState.vue
+    pages/
+      Home.vue
+      Login.vue
+      Register.vue
+      Transactions.vue
+      Analytics.vue
+    services/
+      api.ts
+      auth.ts
+    styles/
+      main.css
+    App.vue
+    main.ts
+    router.ts
   index.html
   package.json
   vite.config.js
+  tsconfig.json
   .env.example
-  src/
-    main.js
-    App.vue
-    components/
-      PasswordGenerator.vue
-ops/
-  backend/
-    start.sh
-    test.sh
-    smoke.sh
-    deploy-dev.sh
-    deploy-prod.sh
-    slot-swap-sim.sh
-    test-functional-sim.sh
-    test-performance-sim.sh
-  frontend/
-    smoke.sh
-    deploy-dev.sh
-    deploy-prod.sh
-    slot-swap-sim.sh
-    test-functional-sim.sh
-    test-performance-sim.sh
-.github/
-  workflows/
-    backend-ci.yml
-    backend-deploy.yml
-    frontend-ci.yml
-    frontend-deploy.yml
+
+.github/workflows/
+  backend-ci.yaml
+  backend-deploy.yaml
+  frontend-ci.yaml
+  frontend-deploy.yaml
+
 render.yaml
 README.md
-```
+
+Backend (Flask)
+Główne elementy
+Routes:
+
+
+/auth – logowanie i rejestracja
+
+
+/transactions – CRUD transakcji
+
+
+/health – health-check
+
+
+Models: User, Transaction
+
+
+Utilities:
+
+
+Singleton – implementacja wzorca Singleton
+
+
+AuthManager – logika autoryzacji
+
+
+TransactionManager – logika biznesowa transakcji
+
+
+CacheManager – cache aplikacyjny
+
+
+Error handling – centralna obsługa wyjątków i logowania
+Uruchomienie lokalne
+
+cd backend
+pip install -r requirements.txt
+python src/app.py
+
+Frontend (Vue 3 + Vite)
+Funkcjonalności
+logowanie / rejestracja
+
+
+lista transakcji
+
+
+dodawanie i edycja transakcji
+
+
+analityka (wykresy)
+
+
+SPA z routingiem
 
 ---
+GitHub Actions (CI/CD)
+W projekcie zastosowano GitHub Actions do realizacji procesów Continuous Integration (CI) oraz Continuous Deployment (CD).
+ Pliki workflow znajdują się w katalogu .github/workflows/ i są podzielone na osobne pipeline’y dla backendu oraz frontendu.
+Continuous Integration
+backend-ci.yaml
 
+
+Środowisko: Python 3.14
+
+
+Uruchamia testy jednostkowe oraz testy typu smoke:
+
+
+ops/backend/test.sh
+
+
+ops/backend/smoke.sh
+
+
+Pipeline weryfikuje poprawność logiki aplikacji backendowej planera budżetu przed wdrożeniem.
+
+
+frontend-ci.yaml
+
+
+Środowisko: Node.js 20
+
+
+Uruchamia test typu smoke:
+
+
+ops/frontend/smoke.sh
+
+
+Sprawdza poprawność budowania aplikacji frontendowej (Vue 3).
+
+
+Continuous Deployment
+backend-deploy.yaml oraz frontend-deploy.yaml
+
+
+Uruchamiane automatycznie po wypchnięciu zmian do odpowiednich gałęzi:
+
+
+dev – środowisko deweloperskie
+
+
+main – środowisko produkcyjne
+
+
+Workflow wywołuje odpowiednie skrypty:
+
+
+ops/backend/deploy.sh
+
+
+ops/frontend/deploy.sh
+
+
+Skrypty te uruchamiają Render Deploy Hooks, inicjując proces wdrożenia aplikacji.
+
+
+Sekrety repozytorium
+Do obsługi automatycznego wdrażania wykorzystywane są sekrety GitHub, zawierające adresy webhooków Rendera:
+Backend
+
+
+RENDER_BACKEND_DEV_HOOK
+
+
+RENDER_BACKEND_PROD_HOOK
+
+
+Frontend
+
+
+RENDER_FRONTEND_DEV_HOOK
+
+
+RENDER_FRONTEND_PROD_HOOK
+
+
+Sekrety te są konfigurowane w:
+ GitHub → Settings → Secrets and variables → Actions.
+Mapowanie gałęzi na środowiska
+Gałąź dev → środowisko DEV
+
+
+Gałąź main → środowisko PROD
+
+
+Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne wdrażanie aplikacji planera budżetu.
+
+---
+Render deployment
+Option A — Render Blueprint (rekomendowane):
+Plik: render.yaml zawiera definicje zarówno backendu (Web Service – Flask), jak i frontendu (Static Site – Vue 3).
+
+
+W panelu Render należy utworzyć nowy Blueprint i wskazać repozytorium projektu.
+
+
+Backend service:
+
+
+Komenda budowania: instalacja zależności z pliku backend/requirements.txt
+
+
+Komenda startowa: uruchomienie aplikacji Flask za pomocą serwera Gunicorn
+
+
+Ścieżka health check: /health
+
+
+Zmienne środowiskowe: zdefiniowane w render.yaml (konfiguracja aplikacji, ustawienia CORS itp.), możliwe do edycji w panelu Render
+
+
+Frontend service (Static Site):
+
+
+Komenda budowania: instalacja zależności oraz zbudowanie wersji produkcyjnej aplikacji Vue
+
+
+Katalog publikacji: frontend/dist
+
+
+Po wdrożeniu backendu należy ustawić zmienną VITE_API_BASE_URL wskazującą na publiczny adres backendu (np. https://budget-planner-backend.onrender.com)
+
+
+Option B — Manual services:
+Backend (Web Service):
+
+
+Utworzenie nowej usługi typu Web Service z repozytorium projektu
+
+
+Użycie tych samych komend budowania i uruchamiania co w opcji Blueprint
+
+
+Konfiguracja ścieżki health check /health
+
+
+Frontend (Static Site):
+
+
+Utworzenie nowej usługi typu Static Site
+
+
+Zbudowanie aplikacji frontendowej z katalogu frontend
+
+
+Publikacja katalogu frontend/dist
+
+
+Ustawienie zmiennej VITE_API_BASE_URL na publiczny adres backendu
+
+
+After first deploy:
+Wejście na publiczny adres frontendu
+
+
+Rejestracja lub logowanie użytkownika
+
+
+Sprawdzenie poprawności działania aplikacji planera budżetu poprzez:
+
+
+pobranie listy transakcji,
+
+
+dodanie nowej transakcji,
+
+
+wyświetlenie podsumowań oraz widoków analitycznych
+
+
+Prawidłowe wykonanie powyższych kroków potwierdza poprawną konfigurację oraz wdrożenie aplikacji planera budżetu.
+
+
+
+---
+### API usage examples
+Pobranie podsumowania dashboardu dla użytkownika
+curl 'http://localhost:5000/transactions/summary?user_id=123'
+
+Pobranie ostatnich 5 transakcji
+curl 'http://localhost:5000/transactions/recent?user_id=123'
+
+Pobranie wszystkich transakcji z filtrowaniem
+curl 'http://localhost:5000/transactions/get?user_id=123&dateFrom=2026-01-01&dateTo=2026-01-09&type=expense&category=Jedzenie'
+
+Dodanie nowej transakcji
+curl -X POST 'http://localhost:5000/transactions/store'
+-H 'Content-Type: application/json'
+-d '{"user_id":"123","name":"Lunch","amount":50,"date":"2026-01-09","type":"expense","category":"Jedzenie"}'
+
+Aktualizacja transakcji
+curl -X PUT 'http://localhost:5000/transactions/update/456'
+-H 'Content-Type: application/json'
+-d '{"amount":55}'
+
+Usunięcie transakcji
+curl -X DELETE 'http://localhost:5000/transactions/delete/456?user_id=123'
+
+Pobranie podziału transakcji po kategoriach
+curl 'http://localhost:5000/transactions/categories?user_id=123&type=expense&period=monthly'
+
+makefile
+Skopiuj kod
+Responses:
+{
+"transactions": [
+{ "id": "1", "name": "Lunch", "amount": 50, "date": "2026-01-09", "type": "expense", "category": "Jedzenie" },
+{ "id": "2", "name": "Salary", "amount": 5000, "date": "2026-01-01", "type": "income", "category": "Pensja" }
+]
+}
+
+{
+"summary": {
+"incomeDaily": 5000,
+"expenseDaily": 50,
+"balanceDaily": 4950,
+"incomeMonthly": 5000,
+"expenseMonthly": 50,
+"balanceMonthly": 4950
+}
+}
+
+{
+"breakdown": [
+{ "category": "Jedzenie", "amount": 200, "percentage": 40 },
+{ "category": "Transport", "amount": 300, "percentage": 60 }
+]
+}
+
+scss
+Skopiuj kod
+Errors (HTTP 400):
+{ "error": "Invalid user_id, transaction ID, or filter parameters" }
+
+
+---
 ### Notes
-- The Singleton pattern is centralized in `backend/decorators.py` and used via `@singleton`. Classes that require singleton access expose `ClassName.get_instance()` automatically.
-- Default CORS allows all origins; restrict via `CORS_ALLOW_ALL=false` + `CORS_ORIGINS`.
-- The password generator ensures at least one character from each enabled class is present and shuffles for randomness.
-- CI smoke tests rely on `curl` and `jq` (installed in the workflow).
+- **Singleton pattern** is implemented via a metaclass in `backend/src/utilities/Singleton.py`. All classes that require a single shared instance use this metaclass and expose access through `ClassName.get_instance()`.
+- **Classes using Singleton in `src/utilities`:**
+  - `AuthManager.py` – manages authentication logic, token validation, and user sessions.
+  - `CacheManager.py` – handles in-memory caching of frequently accessed data (e.g., transaction summaries).
+  - `TransactionManager.py` – centralizes transaction operations such as adding, updating, and deleting transactions while ensuring consistent state.
+  - `Cache.py` – supports caching utilities and integration with `CacheManager`.
+  - Any other class in `src/utilities` that needs a global shared instance follows the Singleton metaclass pattern.
+- **Default CORS** allows all origins; to restrict, set `CORS_ALLOW_ALL=false` and specify allowed origins in `CORS_ORIGINS`.
+- **Transaction endpoints** validate input strictly: amounts must be numbers, dates in `YYYY-MM-DD` format, and categories must match predefined lists.
+- **Dashboard, charts, and category breakdown endpoints** provide aggregated data; filters can be applied via query parameters such as `dateFrom`, `dateTo`, `type`, and `category`.
+- **CI smoke tests** rely on `curl` and `jq` (installed in the workflow) to check basic endpoint availability and correct JSON responses.
 
----
-
-### Troubleshooting
-- 403 CORS errors in the browser: set correct `CORS_*` env vars on the backend service and ensure `VITE_API_BASE_URL` matches the backend public URL.
-- Frontend cannot reach backend on Render: confirm backend is healthy (`/health`), and `VITE_API_BASE_URL` is configured.
-- GitHub deploy workflows not firing: ensure you push to branches `dev`, `test`, or `main`, and secrets are set.
-
-
-### Step-by-step: Configure VITE_API_BASE_URL_DEV/PROD on Render and Deploy Hook secrets in GitHub
-
-This section walks you through setting the three frontend API base variables and the four Render Deploy Hook secrets, end-to-end for Dev and Prod.
-
-Key variables and secrets you will set:
-- Frontend env vars (Render Static Site services):
-  - VITE_API_BASE_URL_DEV (on the Dev frontend)
-  - VITE_API_BASE_URL_PROD (on the Prod frontend)
-  - VITE_API_BASE_URL (optional local fallback; used in local .env only)
-- GitHub repository secrets (used by workflows in .github/workflows/*-deploy.yml):
-  - RENDER_BACKEND_DEV_HOOK
-  - RENDER_BACKEND_PROD_HOOK
-  - RENDER_FRONTEND_DEV_HOOK
-  - RENDER_FRONTEND_PROD_HOOK
-
-Prerequisites
-- Two environments on Render created from this repo (via render.yaml Blueprint or manual):
-  - Dev: services named like password-generator-backend-dev and password-generator-frontend-dev on branch dev
-  - Prod: services named like password-generator-backend-prod and password-generator-frontend-prod on branch main
-- You know the branch mapping: dev → Dev, main → Prod.
-
-1) Get backend public URLs on Render (Dev and Prod)
-- Render Dashboard → Your Dev backend service (e.g., password-generator-backend-dev)
-  - Copy the public URL from the service header (looks like https://<backend-dev>.onrender.com)
-- Render Dashboard → Your Prod backend service (e.g., password-generator-backend-prod)
-  - Copy its public URL (https://<backend-prod>.onrender.com)
-
-2) Set frontend API base variables on Render Static Sites
-Do this separately for Dev and Prod frontend services.
-- Dev frontend:
-  - Render Dashboard → password-generator-frontend-dev → Settings → Environment → Environment Variables
-  - Add key: VITE_API_BASE_URL_DEV
-  - Value: the Dev backend URL you copied in step 1 (e.g., https://<backend-dev>.onrender.com)
-  - Save changes
-  - Redeploy the Dev frontend so the value is baked into the build (Static Sites read env vars at build time)
-- Prod frontend:
-  - Render Dashboard → password-generator-frontend-prod → Settings → Environment → Environment Variables
-  - Add key: VITE_API_BASE_URL_PROD
-  - Value: the Prod backend URL from step 1
-  - Save changes and redeploy the Prod frontend
-Notes:
-- The app resolves API base in this order: VITE_API_BASE_URL_PROD → VITE_API_BASE_URL_DEV → VITE_API_BASE_URL → http://localhost:5000.
-- For local development only, set VITE_API_BASE_URL in frontend/.env (not in Render). See frontend/.env.example.
-
-3) Create Deploy Hooks on Render for all four services
-You will generate one Deploy Hook URL per service, then store each in GitHub as a secret.
-- For each Render service (Dev backend, Prod backend, Dev frontend, Prod frontend):
-  - Render Dashboard → Service → Settings → Deploy hooks → Create Hook
-  - Copy the URL shown; you will paste it into GitHub in the next step
-  - Recommended mapping:
-    - Dev backend → RENDER_BACKEND_DEV_HOOK
-    - Prod backend → RENDER_BACKEND_PROD_HOOK
-    - Dev frontend → RENDER_FRONTEND_DEV_HOOK
-    - Prod frontend → RENDER_FRONTEND_PROD_HOOK
-
-4) Add the Deploy Hook URLs as GitHub repository secrets
-- GitHub → Your repository → Settings → Secrets and variables → Actions → New repository secret
-- Create these four secrets, pasting each corresponding Deploy Hook URL:
-  - RENDER_BACKEND_DEV_HOOK
-  - RENDER_BACKEND_PROD_HOOK
-  - RENDER_FRONTEND_DEV_HOOK
-  - RENDER_FRONTEND_PROD_HOOK
-Why repository secrets?
-- Our workflows in .github/workflows/backend-deploy.yml and frontend-deploy.yml read secrets.RENDER_* names. Repository-level secrets are simplest and work for both branches. If you prefer environment-scoped secrets, you can adapt workflows to use environments and environment secrets.
-
-5) Verify CI/CD wiring
-- Push a commit to the dev branch:
-  - GitHub Actions should run the Frontend Deploy and/or Backend Deploy workflows for dev
-  - The deploy steps call ops/*/deploy-dev.sh which POST the RENDER_*_DEV_HOOK URLs
-  - On Render, you should see new builds triggered for the Dev services
-- Push a commit to the main branch:
-  - Same flow for PROD, using the RENDER_*_PROD_HOOK secrets
-
-6) Functional check in the browser
-- Open the Dev frontend URL (Render → password-generator-frontend-dev → Open)
-  - The footer in the app shows the Backend API base. It should display your Dev backend URL
-  - Click Generate and confirm a password appears
-- Open the Prod frontend URL and repeat
-
-Troubleshooting
-- Frontend can’t reach backend (CORS or 403):
-  - Ensure backend is healthy at https://<backend> /health
-  - Confirm the correct VITE_API_BASE_URL_DEV/PROD is set on the respective frontend service and that the frontend was redeployed after setting env vars
-  - Optionally restrict CORS on backend with CORS_ALLOW_ALL=false and set CORS_ORIGINS to the frontend’s domain
-- Deploy workflows don’t trigger Render:
-  - Check that the appropriate branch was pushed (dev or main)
-  - Confirm all four GitHub secrets are present and not empty
-  - In Render, verify that Deploy Hooks are enabled and the URL hasn’t been regenerated since adding it to GitHub
-- Wrong API base displayed in UI:
-  - Remember the precedence: PROD → DEV → default → localhost
-  - If both VITE_API_BASE_URL_PROD and VITE_API_BASE_URL_DEV are set on the same site, the PROD one wins in the app UI
-- Error: "URL constructor: https://<backend-dev-host>/api/v1/password is not a valid URL":
-  - Cause: a placeholder like https://<backend-dev-host> was baked into the frontend env and is not a valid absolute URL.
-  - Fix on Render: set VITE_API_BASE_URL_DEV (Dev site) or VITE_API_BASE_URL_PROD (Prod site) to the actual backend public URL (e.g., https://password-generator-backend-dev.onrender.com) and redeploy the frontend.
-  - Local fallback: the app now validates the configured URL and will fall back to http://localhost:5000 in dev or window.origin in prod to avoid crashes; still set the correct env to enable API calls.
-
-Where these values are used in this repo
-- Frontend resolves the API base in src/App.vue and src/components/PasswordGenerator.vue
-- Example env docs are in frontend/.env.example
-- Deploy workflows use these secrets:
-  - .github/workflows/backend-deploy.yml → RENDER_BACKEND_DEV_HOOK, RENDER_BACKEND_PROD_HOOK
-  - .github/workflows/frontend-deploy.yml → RENDER_FRONTEND_DEV_HOOK, RENDER_FRONTEND_PROD_HOOK
-- Bash deploy scripts read the same env vars (ops/backend/deploy-*.sh, ops/frontend/deploy-*.sh)
 
 
 ---
-
-### CI/CD pipeline stages (staged view)
-
-Both backend and frontend pipelines are now organized into clear, sequential stages so you can see progress step by step in GitHub Actions.
-
-Backend Pipeline (on push/PR; deploy runs only on push to dev/main):
-1) Build
-   - Runs `bash ops/backend/build.sh`
-   - Installs Python deps and byte-compiles sources to catch syntax errors.
-2) Unit Tests
-   - Runs `bash ops/backend/test.sh` (pytest on Python 3.14)
-3) Functional Tests (simulation)
-   - Runs `bash ops/backend/test-functional-sim.sh`
-   - Default duration: `DURATION=60` seconds (override via job env)
-4) Performance Tests (simulation)
-   - Runs `bash ops/backend/test-performance-sim.sh`
-   - Default: `DURATION=60`, `BATCH_SIZE=10` (override via job env)
-5) Smoke Tests
-   - Runs `bash ops/backend/smoke.sh` (starts Gunicorn, checks `/health` and `/api/v1/password`)
-6) Deploy (Render)
-   - On push to `dev`: uses `RENDER_BACKEND_DEV_HOOK`
-   - On push to `main`: uses `RENDER_BACKEND_PROD_HOOK`
-
-Frontend Pipeline (on push/PR; deploy runs only on push to dev/main):
-1) Build
-   - Runs `bash ops/frontend/build.sh` (`npm ci` + `npm run build`)
-2) Functional Tests (simulation)
-   - Runs `bash ops/frontend/test-functional-sim.sh`
-   - Default: `DURATION=60`, `SLEEP_MS=100`
-3) Performance Tests (simulation)
-   - Runs `bash ops/frontend/test-performance-sim.sh`
-   - Default: `DURATION=60`, `BATCH_SIZE=10`
-4) Smoke Tests
-   - Runs `bash ops/frontend/smoke.sh` (build + preview + HTTP check)
-5) Deploy (Render)
-   - On push to `dev`: uses `RENDER_FRONTEND_DEV_HOOK`
-   - On push to `main`: uses `RENDER_FRONTEND_PROD_HOOK`
-
-Manual deploy workflows (optional):
-- `Frontend Deploy (manual)` and `Backend Deploy (manual)` can be triggered from the Actions tab via `workflow_dispatch` with an `environment` input (`dev` or `prod`). They call the same hook scripts under `ops/`.
-
-Tuning simulations:
-- You can override duration/parameters by editing the job env in the workflows or by running scripts locally, e.g.:
-  - `DURATION=30 SLEEP_MS=50 bash ops/backend/test-functional-sim.sh`
-  - `DURATION=45 BATCH_SIZE=20 bash ops/backend/test-performance-sim.sh`
-
-Where to find logs:
-- GitHub → Actions → pick the workflow run → select the current stage job (Build, Unit Tests, Functional, Performance, Smoke, Deploy) → expand steps to view logs.
-
-Project structure additions:
-- Added `ops/backend/build.sh` and `ops/frontend/build.sh` used by the Build stages.
+## Prerequisites
+- Two environments on Render created from this repo (via `render.yaml` Blueprint or manual setup):
+  - **Dev**: services named like `budget-planner-backend-dev` and `budget-planner-frontend-dev` on branch `dev`
+  - **Prod**: services named like `budget-planner-backend-prod` and `budget-planner-frontend-prod` on branch `main`
+- Branch mapping: `dev` → Dev environment, `main` → Prod environment
+- Node.js (v18+) and npm/yarn installed for frontend
+- Python 3.11+ with virtual environment for backend
+- Required packages installed:
+  - Backend: `pip install -r backend/requirements.txt`
+  - Frontend: `npm install` or `yarn install` in `frontend/`
+- Access to environment variables:
+  - Backend: `.env` or Render environment variables for database, CORS, and other configs
+  - Frontend: `.env` or `.env.local` with `VITE_API_BASE_URL` pointing to the backend
+- Optional but recommended: `curl` and `jq` for running smoke tests locally
+ used by the Build stages.
