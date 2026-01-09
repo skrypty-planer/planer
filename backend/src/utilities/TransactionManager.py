@@ -97,7 +97,7 @@ class TransactionManager(metaclass=Singleton):
         transactions = self.ensure_user_data(user_id)
         return transactions[:5]
 
-    def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None):
+    def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None, _type=None):
         transactions = self.ensure_user_data(user_id)
 
         result = []
