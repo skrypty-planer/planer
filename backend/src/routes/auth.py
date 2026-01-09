@@ -37,7 +37,7 @@ def login():
     password = data.get('password')
     
     if not username or not password:
-        return jsonify({'message': 'Brak wymaganych danych', 'status_code': 400})
+        return jsonify({'message': 'Missing data', 'status_code': 400})
 
     auth = AuthManager()
     user_id, error = auth.login(username, password)
