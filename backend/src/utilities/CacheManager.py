@@ -2,8 +2,6 @@ from .Singleton import Singleton
 from ..models.user import User
 from flask_caching import Cache
 
-print("CacheManager module imported")
-
 class CacheManager(metaclass=Singleton):
     def __init__(self, cache: Cache):
         self.cache = cache

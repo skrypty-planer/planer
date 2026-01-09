@@ -102,7 +102,6 @@ watch(() => props.modelValue, (value) => {
   isOpen.value = value
   if (value && props.user) {
     formData.value.username = props.user.username
-    // Populate password field with current password
     formData.value.password = props.user.password || ''
     avatarPreview.value = props.user.avatarUrl
     avatarDataUrl.value = ''
@@ -131,10 +130,8 @@ function handleFileChange(event: Event) {
 async function handleSave() {
   if (!props.user) return
 
-  // Reset errors
   errors.value = {}
 
-  // Validate
   if (!formData.value.username.trim()) {
     errors.value.username = 'Pole obligatoryjne'
     return

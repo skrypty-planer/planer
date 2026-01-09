@@ -3,7 +3,7 @@
     <div class="container footer__inner">
       <div class="footer-left">
         <span class="material-icons" style="font-size:1rem; vertical-align:middle;">info</span>
-        <span class="caption"> Demo tylko Frontend • Wersja: 0.0.2 </span>
+        <span class="caption"> Demo tylko Frontend • Wersja: 1.0.0 </span>
       </div>
       <div class="caption footer-right">
         © {{ new Date().getFullYear() }} Budżet Planner
@@ -17,12 +17,12 @@
 
 <style scoped>
 .footer {
-  padding: 2rem 0; /* Increased padding */
+  padding: 2rem 0;
 }
 .footer__inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem; /* Add side padding */
+  padding: 0 2rem;
 }
 </style>

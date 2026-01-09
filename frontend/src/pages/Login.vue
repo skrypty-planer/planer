@@ -78,7 +78,6 @@ const password = ref('')
 const errors = ref<{ username?: string; password?: string; general?: string }>({})
 const showSuccessModal = ref(false)
 
-// Auto-redirect after delay or when modal closes
 watch(showSuccessModal, (isOpen) => {
   if (isOpen) {
     setTimeout(() => {
@@ -90,10 +89,8 @@ watch(showSuccessModal, (isOpen) => {
 })
 
 async function handleLogin() {
-  // Reset errors
   errors.value = {}
 
-  // Validate
   let isValid = true
   if (!username.value.trim()) {
     errors.value.username = 'Pole obligatoryjne'
@@ -134,7 +131,7 @@ function closeSuccessModal() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%); /* Lighter blue gradient */
+  background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%);
   padding: 0.5rem;
   overflow: hidden;
 }

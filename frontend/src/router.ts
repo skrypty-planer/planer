@@ -19,15 +19,13 @@ const router = createRouter({
     routes,
 })
 
-// Navigation guards
+// Zabezpieczenie logowania
 router.beforeEach((to, from, next) => {
     const currentUser = getCurrentUser()
 
     if (to.meta.requiresAuth && !currentUser) {
-        // Redirect to login if trying to access protected route without auth
         next('/login')
     } else if (to.meta.requiresGuest && currentUser) {
-        // Redirect to home if trying to access guest-only route while authenticated
         next('/')
     } else {
         next()

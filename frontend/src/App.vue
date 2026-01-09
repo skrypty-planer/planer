@@ -14,14 +14,12 @@
 
     <AppFooter v-if="user" />
 
-    <!-- Edit Profile Modal -->
     <EditProfileModal
       v-model="showEditProfile"
       :user="user"
       @updated="handleProfileUpdated"
     />
 
-    <!-- Logout Confirmation Modal -->
     <Modal
       v-model="showLogoutConfirm"
       title="Wylogowanie"
@@ -34,7 +32,6 @@
       @confirm="handleLogout"
     />
 
-    <!-- Logout Success Modal -->
     <Modal
       v-model="showLogoutSuccess"
       title="Wylogowano"
@@ -70,23 +67,19 @@ const showLogoutSuccess = ref(false)
 onMounted(() => {
   user.value = getCurrentUser()
   
-  // If no user and not on auth pages, redirect to login
   if (!user.value && route.path !== '/login' && route.path !== '/register') {
     router.push('/login')
   }
 })
 
-// Watch for route changes to update user state (e.g. after login/logout)
 watch(() => route.path, () => {
   user.value = getCurrentUser()
 })
 
-// Check if current route is auth page
 const isAuthPage = computed(() => {
   return route.path === '/login' || route.path === '/register'
 })
 
-// Watch for success modal closing (e.g. via backdrop) to ensure redirect
 watch(showLogoutSuccess, (isOpen) => {
   if (!isOpen && !user.value) {
     router.push('/login')
@@ -101,7 +94,6 @@ function handleLogout() {
   logout()
   user.value = null
   showLogoutConfirm.value = false
-  // Redirect immediately to login to avoid "empty data" flash
   router.push('/login')
   showLogoutSuccess.value = true
 }

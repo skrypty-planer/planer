@@ -37,7 +37,6 @@ const isActive = (name) => route.name === name
   font-weight: 500;
 }
 .kafel--active {
-  /* lokalny test – wyróżnienie aktywnego kafelka */
   outline: 2px solid var(--primary);
 }
 </style>

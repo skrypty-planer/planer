@@ -1,6 +1,5 @@
 <template>
   <section>
-    <!-- Motivational Quote -->
     <div class="card quote-card">
       <div class="quote-icon">💡</div>
       <blockquote class="quote-text">
@@ -9,7 +8,6 @@
       <p class="quote-author">— {{ currentQuote.author }}</p>
     </div>
 
-    <!-- Kafle miesięcznych sum -->
     <div class="grid cols-3 monthly-summary">
       <div class="kafel stat">
         <div class="stat__label">Przychody miesięczne</div>
@@ -30,7 +28,6 @@
       </div>
     </div>
 
-    <!-- Ostatnie transakcje -->
     <div v-if="recent.length > 0" class="card" style="margin-top:1rem;">
       <h3 style="margin:0 0 .6rem;">Ostatnie transakcje</h3>
       <div class="table-container">
@@ -61,7 +58,6 @@
       </div>
     </div>
 
-    <!-- Empty state for transactions -->
     <div v-else class="card" style="margin-top:1rem;">
       <EmptyState
         icon="📊"
@@ -70,7 +66,6 @@
       />
     </div>
 
-    <!-- Wykres: Bilans w ostatnim miesiącu -->
     <div class="card" style="margin-top:1rem;">
       <h3 style="margin:0 0 .6rem;">Bilans w ostatnim miesiącu</h3>
       <div class="chart-container">
@@ -224,9 +219,8 @@ onMounted(async () => {
 })
 
 function toHeight(v: number) {
-  // prosty skaler słupków – maks 1000
   const max = 1000 
-  const h = Math.round((v / max) * 180) // Reduced max height slightly to fit labels
+  const h = Math.round((v / max) * 180)
   return `${Math.max(2, Math.min(h, 180))}px`
 }
 
@@ -273,7 +267,7 @@ function formatValue(v: number) {
 }
 .stat__label {
   color: var(--muted);
-  font-weight: 600; /* Bolded as requested */
+  font-weight: 600;
 }
 .stat__value {
   font-size: 1.4rem;

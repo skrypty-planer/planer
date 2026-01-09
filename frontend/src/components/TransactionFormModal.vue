@@ -149,16 +149,13 @@ watch(isOpen, (value) => {
   emit('update:modelValue', value)
 })
 
-// Reset category when type changes
 watch(() => formData.value.type, () => {
   formData.value.category = ''
 })
 
 function handleSubmit() {
-  // Reset errors
   errors.value = {}
 
-  // Validate
   if (!formData.value.name.trim()) {
     errors.value.name = 'Pole obligatoryjne'
   }
