@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, current_app
+from flask import Blueprint, request, jsonify, session
 from ..error_handling.logger import logger
 from ..error_handling.exceptions import HTTP_STATUS_CODE
 from ..utilities.AuthManager import AuthManager
@@ -11,9 +11,9 @@ def register():
     username = data.get('username')
     password = data.get('password')
     avatar_url = data.get('avatarUrl')
-    
-    if not username or not password:
-        return jsonify({'message': 'Missing data', 'status_code': 400})
+
+    if username is None or password is None:
+        return jsonify({'message': 'Brak wymaganych danych', 'status_code': 400})
 
     auth = AuthManager()
     user_id, error = auth.register_user(username, password, avatar_url)
@@ -68,23 +68,13 @@ def guest_login():
 
 @bp.route('/logout', methods=['POST'])
 def logout():
-    session.pop('user_id', None)
-    return jsonify({'status_code': HTTP_STATUS_CODE.OK})
+    logged_out_user_id = session.pop('user_id', None)
+    return jsonify({'status_code': HTTP_STATUS_CODE.OK, 'user_id': logged_out_user_id})
 
 @bp.route('/me', methods=['GET'])
 def me():
-    # Frontend sends user_id sometimes, but we should rely on session or check provided id
-    # The original implementation used request.json['user_id'] which IS WRONG for GET requests usually (no body).
-    # But let's check both or stick to session if available. 
-    # Frontend `api.ts` `ensureUserData` logic suggests it knows the ID.
-    # Frontend `auth.ts` `getCurrentUser` reads from local storage.
-    # Let's assume frontend sends query param or we use session.
-    # Original used request.json['user_id'].
     
     user_id = session.get('user_id')
-    # fallback to query param if needed for stateless checks? 
-    # But let's verify if frontend communicates via headers/params.
-    # The prompt says "backend... functionality... like simulated".
     
     from ..utilities.CacheManager import CacheManager
     cache = CacheManager()
@@ -115,6 +105,7 @@ def update_profile():
         return jsonify({'message': 'Unauthorized', 'status_code': 401})
         
     user_id = session['user_id']
+
     data = request.json
     
     auth = AuthManager()

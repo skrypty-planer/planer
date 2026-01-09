@@ -1,5 +1,5 @@
-from .__init__ import client, app
-import pytest
+# from .__init__ import client, app
+# import pytest
 
 # def test_get(client, app):
 #     response = client.post(

@@ -1,12 +1,9 @@
 from .Singleton import Singleton
 from ..models.transaction import Transaction
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from .CacheManager import CacheManager
-from ..error_handling.exceptions import DATA_NOT_FOUND_EXCEPTION
 from ..error_handling.logger import logger
-from flask import current_app
 import random
-import uuid
 
 CATEGORIES_INCOME = ['Pensja', 'Premia', 'Zwrot podatku', 'Sprzedaż']
 CATEGORIES_EXPENSE = ['Jedzenie', 'Mieszkanie', 'Transport', 'Zdrowie', 'Rozrywka', 'Subskrypcje']
@@ -98,12 +95,9 @@ class TransactionManager(metaclass=Singleton):
 
     def get_recent_transactions(self, user_id):
         transactions = self.ensure_user_data(user_id)
-        # Assuming already sorted desc by date in ensure/generate
-        # But if added manually, might need sorting. Let's sort to be safe but expensive?
-        # api.ts sorts on generation. addTransaction unshifts. So it should be sorted.
         return transactions[:5]
     
-    def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None):
+    def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None, _type=None):
         transactions = self.ensure_user_data(user_id)
         
         result = []
@@ -114,8 +108,9 @@ class TransactionManager(metaclass=Singleton):
             if category and t['category'] != category: continue
             if amount_min is not None and t['amount'] < float(amount_min): continue
             if amount_max is not None and t['amount'] > float(amount_max): continue
+            if t != _type: continue
             result.append(t)
-            
+        
         # Sorting
         if sort:
             if sort == 'amount-asc':
@@ -237,7 +232,7 @@ class TransactionManager(metaclass=Singleton):
 
     def add_transaction(self, user_id, name, transaction_type, amount, category):
         cache = CacheManager()
-        # Use simpler logic without calling cache.add_transaction with object
+
         user = cache.get_user(user_id)
         if not user: raise Exception("User not found")
         
@@ -271,11 +266,6 @@ class TransactionManager(metaclass=Singleton):
         transactions = user.get('transactions', [])
         for i, t in enumerate(transactions):
             if t['id'] == transaction_id:
-                # Calculate balance diff if amount/type changed? 
-                # For simplicity, let's assume complex balance recalc via full re-sum or just simple delta
-                # Actually, api.ts doesn't explicitly track balance in user object, just aggregates. 
-                # User model has 'funds'. Let's update funds.
-                
                 old_val = t['amount'] if t['type'] == 'income' else -t['amount']
                 
                 updated_tx = {**t, **updates}
