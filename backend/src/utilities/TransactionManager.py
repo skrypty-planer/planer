@@ -56,7 +56,6 @@ class TransactionManager(metaclass=Singleton):
 
     def ensure_user_data(self, user_id):
         cache = CacheManager()
-        print("TransactionManager calling CacheManager()")
         user = cache.get_user(user_id)
         if not user:
             logger.debug(f"There was no user {user_id}")
@@ -238,7 +237,6 @@ class TransactionManager(metaclass=Singleton):
 
     def add_transaction(self, user_id, name, transaction_type, amount, category):
         cache = CacheManager()
-        print("TransactionManager calling CacheManager()")
         # Use simpler logic without calling cache.add_transaction with object
         user = cache.get_user(user_id)
         if not user: raise Exception("User not found")
@@ -267,7 +265,6 @@ class TransactionManager(metaclass=Singleton):
 
     def update_transaction(self, user_id, transaction_id, updates):
         cache = CacheManager()
-        print("TransactionManager calling CacheManager()")
         user = cache.get_user(user_id)
         if not user: return None
 
@@ -293,7 +290,6 @@ class TransactionManager(metaclass=Singleton):
 
     def delete_transaction(self, user_id, transaction_id):
         cache = CacheManager()
-        print("TransactionManager calling CacheManager()")
         user = cache.get_user(user_id)
         if not user: return False
 

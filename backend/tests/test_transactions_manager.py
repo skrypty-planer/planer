@@ -200,7 +200,7 @@ def test_update_transaction_success(app):
         user = app.cache_manager.get_user(1)
 
     assert updated["amount"] == 200
-    assert user["funds"] == 900  # -100 -> -200 (delta -100)
+    assert user["funds"] == 900
 
 
 def test_update_transaction_not_found(app):

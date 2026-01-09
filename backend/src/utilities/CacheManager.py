@@ -10,10 +10,6 @@ print("CacheManager module imported")
 
 class CacheManager(metaclass=Singleton):
     def __init__(self, cache: Cache):
-        print("INIT CacheManager", id(self))
-        import traceback
-        print("CacheManager INIT called with cache =", cache)
-        traceback.print_stack()
         self.cache = cache
         if not self.cache.get("users"):
             self.cache.set("users", {})
@@ -46,7 +42,7 @@ class CacheManager(metaclass=Singleton):
         
     def get_user(self, user_id):
         users = self.cache.get("users")
-        print("GET USERS:", self.cache.get("users"))
+
         if users and user_id in users:
             return users[user_id]
         return None
@@ -58,8 +54,6 @@ class CacheManager(metaclass=Singleton):
             users[user_id] = user_data.get_obj()
         else:
             users[user_id] = user_data
-
-        print("SET USER:", self.cache.get("users"))
         
         self.cache.set("users", users)
     
