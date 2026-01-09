@@ -62,9 +62,8 @@ def create_app(test_config=None):
     from .utilities.AuthManager import AuthManager
     from .utilities.CacheManager import CacheManager
     from .utilities.TransactionManager import TransactionManager
-
-    app.cache_manager = CacheManager(cache)
     AuthManager()
+    CacheManager(cache)
     TransactionManager()
     
     logger.info('Created singleton objects.')
@@ -74,9 +73,8 @@ def create_app(test_config=None):
     return app
 
 
-#app = create_app()
+app = create_app()
 if __name__ == '__main__':
     cfg = DevelopmentConfig()
-    app = create_app()
     port = int(os.getenv("PORT", cfg.port))
     app.run(host=cfg.host, port=port, debug=cfg.debug)

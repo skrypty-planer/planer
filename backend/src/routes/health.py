@@ -1,5 +1,4 @@
-from flask import Blueprint, request, jsonify, session
-from ..error_handling.logger import logger
+from flask import Blueprint, jsonify
 
 bp = Blueprint('/check', __name__, url_prefix='/check')
 

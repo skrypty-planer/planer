@@ -1,1 +1,1 @@
-from .__init__ import client, app
+# from .__init__ import client, app
