@@ -103,8 +103,9 @@ README.md
 
  ```
 ---
+
 ### Backend (Flask)
-Główne elementy
+#Główne elementy
  -Routes:
   -/auth – logowanie i rejestracja
   -/transactions – CRUD transakcji
@@ -116,6 +117,7 @@ Główne elementy
  -TransactionManager – logika biznesowa transakcji
  -CacheManager – cache aplikacyjny
  -Error handling – centralna obsługa wyjątków i logowania
+ 
 ---
 Uruchomienie lokalne
 ```
