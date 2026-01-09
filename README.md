@@ -4,16 +4,10 @@ Budget Planner – Full-stack Web Application
 Full-stackowa aplikacja webowa typu planer budżetu, umożliwiająca użytkownikom zarządzanie finansami osobistymi: rejestrowanie transakcji, analizę wydatków oraz wizualizację danych finansowych.
  Projekt został zrealizowany w architekturze klient–serwer z wykorzystaniem Python Flask (backend) oraz Vue 3 + Vite + TypeScript (frontend), wraz z pełnym pipeline’em CI/CD.
 Architektura projektu
-Backend: Flask (Python), architektura warstwowa, wzorce projektowe (Singleton, Managerowie)
-
-
-Frontend: Vue 3, Vite, TypeScript, komponenty SPA
-
-
-CI/CD: GitHub Actions (testy, build, smoke)
-
-
-CD / Hosting: Render (deploy hooks + render.yaml)
+- Backend: Flask (Python), architektura warstwowa, wzorce projektowe (Singleton, Managerowie)
+- Frontend: Vue 3, Vite, TypeScript, komponenty SPA
+- CI/CD: GitHub Actions (testy, build, smoke)
+- CD / Hosting: Render (deploy hooks + render.yaml)
 
 
 Testy: pytest (backend)
@@ -103,153 +97,78 @@ frontend/
 render.yaml
 README.md
 
-Backend (Flask)
+### Backend (Flask)
 Główne elementy
-Routes:
-
-
-/auth – logowanie i rejestracja
-
-
-/transactions – CRUD transakcji
-
-
-/health – health-check
-
-
-Models: User, Transaction
-
-
-Utilities:
-
-
-Singleton – implementacja wzorca Singleton
-
-
-AuthManager – logika autoryzacji
-
-
-TransactionManager – logika biznesowa transakcji
-
-
-CacheManager – cache aplikacyjny
-
-
-Error handling – centralna obsługa wyjątków i logowania
+ -Routes:
+  -/auth – logowanie i rejestracja
+  -/transactions – CRUD transakcji
+  -/health – health-check
+ -Models: User, Transaction
+ -Utilities:
+ -Singleton – implementacja wzorca Singleton
+ -AuthManager – logika autoryzacji
+ -TransactionManager – logika biznesowa transakcji
+ -CacheManager – cache aplikacyjny
+ -Error handling – centralna obsługa wyjątków i logowania
+ 
 Uruchomienie lokalne
-
+```
 cd backend
 pip install -r requirements.txt
 python src/app.py
-
-Frontend (Vue 3 + Vite)
+```
+---
+### Frontend (Vue 3 + Vite)
 Funkcjonalności
-logowanie / rejestracja
-
-
-lista transakcji
-
-
-dodawanie i edycja transakcji
-
-
-analityka (wykresy)
-
-
-SPA z routingiem
+ -logowanie / rejestracja
+ -lista transakcji
+ -dodawanie i edycja transakcji
+ -analityka (wykresy)
+ -SPA z routingiem
 
 ---
 GitHub Actions (CI/CD)
 W projekcie zastosowano GitHub Actions do realizacji procesów Continuous Integration (CI) oraz Continuous Deployment (CD).
  Pliki workflow znajdują się w katalogu .github/workflows/ i są podzielone na osobne pipeline’y dla backendu oraz frontendu.
-Continuous Integration
-backend-ci.yaml
 
-
-Środowisko: Python 3.14
-
-
-Uruchamia testy jednostkowe oraz testy typu smoke:
-
-
-ops/backend/test.sh
-
-
-ops/backend/smoke.sh
-
-
-Pipeline weryfikuje poprawność logiki aplikacji backendowej planera budżetu przed wdrożeniem.
-
-
-frontend-ci.yaml
-
-
-Środowisko: Node.js 20
-
-
-Uruchamia test typu smoke:
-
-
-ops/frontend/smoke.sh
-
-
-Sprawdza poprawność budowania aplikacji frontendowej (Vue 3).
-
-
-Continuous Deployment
-backend-deploy.yaml oraz frontend-deploy.yaml
+ -backend-ci.yaml
+  -Środowisko: Python 3.14
+  -Uruchamia testy jednostkowe oraz testy typu smoke:
+   -ops/backend/test.sh
+   -ops/backend/smoke.sh
+ -Pipeline weryfikuje poprawność logiki aplikacji backendowej planera budżetu przed wdrożeniem.
+ -frontend-ci.yaml
+  -Środowisko: Node.js 20
+  -Uruchamia test typu smoke:
+   -ops/frontend/smoke.sh
+   -Sprawdza poprawność budowania aplikacji frontendowej (Vue 3).
+-Continuous Deployment
+ -backend-deploy.yaml oraz frontend-deploy.yaml
 
 
 Uruchamiane automatycznie po wypchnięciu zmian do odpowiednich gałęzi:
 
 
 dev – środowisko deweloperskie
-
-
 main – środowisko produkcyjne
-
-
 Workflow wywołuje odpowiednie skrypty:
-
-
 ops/backend/deploy.sh
-
-
 ops/frontend/deploy.sh
-
-
 Skrypty te uruchamiają Render Deploy Hooks, inicjując proces wdrożenia aplikacji.
-
 
 Sekrety repozytorium
 Do obsługi automatycznego wdrażania wykorzystywane są sekrety GitHub, zawierające adresy webhooków Rendera:
 Backend
-
-
 RENDER_BACKEND_DEV_HOOK
-
-
 RENDER_BACKEND_PROD_HOOK
-
-
 Frontend
-
-
 RENDER_FRONTEND_DEV_HOOK
-
-
 RENDER_FRONTEND_PROD_HOOK
-
-
 Sekrety te są konfigurowane w:
  GitHub → Settings → Secrets and variables → Actions.
 Mapowanie gałęzi na środowiska
 Gałąź dev → środowisko DEV
-
-
 Gałąź main → środowisko PROD
-
-
 Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne wdrażanie aplikacji planera budżetu.
 
 ---
