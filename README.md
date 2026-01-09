@@ -111,7 +111,7 @@ README.md
 - **Routes:**
   - `/auth` – logowanie i rejestracja
   - `/transactions` – CRUD transakcji
-  - `/health` – health-check
+  - `/check/health` – health-check
 
 - **Models:** User, Transaction
 
@@ -128,7 +128,7 @@ Uruchomienie lokalne
 ```
 cd backend
 pip install -r requirements.txt
-python src/app.py
+python -m flask --app src/app.py run --debug
 ```
 ---
 ### Frontend (Vue 3 + Vite)
@@ -170,9 +170,7 @@ Pliki workflow znajdują się w katalogu `.github/workflows/` i są podzielone n
 
 #### Continuous Deployment
 - `backend-deploy.yaml` oraz `frontend-deploy.yaml`  
-  Uruchamiane automatycznie po wypchnięciu zmian do odpowiednich gałęzi:
-  - `dev` – środowisko deweloperskie  
-  - `main` – środowisko produkcyjne  
+  Uruchamiane automatycznie po wypchnięciu zmian do gałęzi `main`
   Workflow wywołuje odpowiednie skrypty:
   - `ops/backend/deploy.sh`  
   - `ops/frontend/deploy.sh`  
@@ -183,21 +181,12 @@ Do obsługi automatycznego wdrażania wykorzystywane są sekrety GitHub, zawiera
 
 - **Backend:**
   - `RENDER_BACKEND_DEV_HOOK`  
-  - `RENDER_BACKEND_PROD_HOOK`  
 
 - **Frontend:**
   - `RENDER_FRONTEND_DEV_HOOK`  
-  - `RENDER_FRONTEND_PROD_HOOK`  
 
 Sekrety te są konfigurowane w:  
 `GitHub → Settings → Secrets and variables → Actions`.
-
-#### Mapowanie gałęzi na środowiska
-- Gałąź `dev` → środowisko DEV  
-- Gałąź `main` → środowisko PROD  
-
-Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne wdrażanie aplikacji planera budżetu.
-
 
 ---
 
@@ -210,7 +199,7 @@ Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne 
 **Backend service:**
 - Komenda budowania: instalacja zależności z pliku `backend/requirements.txt`  
 - Komenda startowa: uruchomienie aplikacji Flask za pomocą serwera Gunicorn  
-- Ścieżka health check: `/health`  
+- Ścieżka health check: `/check/health`  
 - Zmienne środowiskowe: zdefiniowane w `render.yaml` (konfiguracja aplikacji, ustawienia CORS itp.), możliwe do edycji w panelu Render  
 
 **Frontend service (Static Site):**
@@ -223,7 +212,7 @@ Takie podejście zapewnia automatyczne testowanie oraz bezpieczne i powtarzalne 
 **Backend (Web Service):**
 - Utworzenie nowej usługi typu Web Service z repozytorium projektu  
 - Użycie tych samych komend budowania i uruchamiania co w opcji Blueprint  
-- Konfiguracja ścieżki health check: `/health`  
+- Konfiguracja ścieżki health check: `/check/health`  
 
 **Frontend (Static Site):**
 - Utworzenie nowej usługi typu Static Site  
@@ -304,10 +293,8 @@ Errors (HTTP 400):
 ---
 
 ## Prerequisites
-- Dwa środowiska na Render utworzone z tego repozytorium (przez Blueprint w `render.yaml` lub ręcznie):
-  - **Dev**: usługi o nazwach `budget-planner-backend-dev` i `budget-planner-frontend-dev` na gałęzi `dev`
-  - **Prod**: usługi o nazwach `budget-planner-backend-prod` i `budget-planner-frontend-prod` na gałęzi `main`
-- Mapowanie gałęzi: `dev` → środowisko Dev, `main` → środowisko Prod
+- Środowisko na Render utworzone z tego repozytorium (przez Blueprint w `render.yaml` lub ręcznie):
+  - **Dev**: usługi o nazwach `budget-planner-backend-dev` i `budget-planner-frontend-dev` na gałęzi `main`
 - Node.js (v18+) i npm/yarn zainstalowane dla frontendu
 - Python 3.11+ z virtualenv dla backendu
 - Zainstalowane wymagane pakiety:
@@ -316,5 +303,5 @@ Errors (HTTP 400):
 - Dostęp do zmiennych środowiskowych:
   - Backend: `.env` lub zmienne Render dla bazy danych, CORS i innych ustawień
   - Frontend: `.env` lub `.env.local` z `VITE_API_BASE_URL` wskazującym backend
-- Opcjonalnie, ale zalecane: `curl` i `jq` do uruchamiania testów smoke lokalnie, używane w etapach build.
+- Konieczne do uruchomienia smoke-testów lokalnie: `curl` i `jq`.
 
