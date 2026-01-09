@@ -105,19 +105,24 @@ README.md
 ---
 
 ### Backend (Flask)
-#Główne elementy
- -Routes:
-  -/auth – logowanie i rejestracja
-  -/transactions – CRUD transakcji
-  -/health – health-check
- -Models: User, Transaction
- -Utilities:
- -Singleton – implementacja wzorca Singleton
- -AuthManager – logika autoryzacji
- -TransactionManager – logika biznesowa transakcji
- -CacheManager – cache aplikacyjny
- -Error handling – centralna obsługa wyjątków i logowania
- 
+
+**Główne elementy**
+
+- **Routes:**
+  - `/auth` – logowanie i rejestracja
+  - `/transactions` – CRUD transakcji
+  - `/health` – health-check
+
+- **Models:** User, Transaction
+
+- **Utilities:**
+  - `Singleton` – implementacja wzorca Singleton
+  - `AuthManager` – logika autoryzacji
+  - `TransactionManager` – logika biznesowa transakcji
+  - `CacheManager` – cache aplikacyjny
+
+- **Error handling:** centralna obsługa wyjątków i logowania
+
 ---
 Uruchomienie lokalne
 ```
