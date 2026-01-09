@@ -92,7 +92,6 @@ const errors = ref<{ username?: string; password?: string; general?: string }>({
 const showSuccessModal = ref(false)
 const fileInput = ref<HTMLInputElement>()
 
-// Redirect when modal closes (either by OK button or backdrop click)
 import { watch } from 'vue'
 watch(showSuccessModal, (isOpen) => {
   if (!isOpen) {
@@ -115,10 +114,8 @@ function handleFileChange(event: Event) {
 }
 
 async function handleRegister() {
-  // Reset errors
   errors.value = {}
 
-  // Validate
   let isValid = true
   if (!username.value.trim()) {
     errors.value.username = 'Pole obligatoryjne'

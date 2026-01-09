@@ -110,7 +110,7 @@ class TransactionManager(metaclass=Singleton):
             if amount_max is not None and t['amount'] > float(amount_max): continue
             if t != _type: continue
             result.append(t)
-            
+        
         # Sorting
         if sort:
             if sort == 'amount-asc':
@@ -266,11 +266,6 @@ class TransactionManager(metaclass=Singleton):
         transactions = user.get('transactions', [])
         for i, t in enumerate(transactions):
             if t['id'] == transaction_id:
-                # Calculate balance diff if amount/type changed? 
-                # For simplicity, let's assume complex balance recalc via full re-sum or just simple delta
-                # Actually, api.ts doesn't explicitly track balance in user object, just aggregates. 
-                # User model has 'funds'. Let's update funds.
-                
                 old_val = t['amount'] if t['type'] == 'income' else -t['amount']
 
                 updated_tx = {**t, **updates}

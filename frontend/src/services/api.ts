@@ -22,8 +22,8 @@ export interface TransactionFilter {
     dateFrom?: string;
     dateTo?: string;
     name?: string;
-    amount?: number; // Not commonly used in this UI but supported
-    amountMin?: number; // Backend uses these
+    amount?: number;
+    amountMin?: number;
     amountMax?: number;
     category?: string;
     type?: 'income' | 'expense' | '';
@@ -82,19 +82,16 @@ async function request(endpoint: string, options: RequestInit = {}) {
     return data;
 }
 
-// DASHBOARD SUMMARY
 export async function getDashboardSummary(userId: string): Promise<DashboardSummary> {
     const res = await request(`/transactions/summary?user_id=${userId}`);
     return res.summary;
 }
 
-// RECENT TRANSACTIONS (5)
 export async function getRecentTransactions(userId: string): Promise<Transaction[]> {
     const res = await request(`/transactions/recent?user_id=${userId}`);
     return res.transactions;
 }
 
-// ALL TRANSACTIONS + FILTERS
 export async function getAllTransactions(userId: string, filters: TransactionFilter = {}): Promise<{ items: Transaction[], meta: { total: number } }> {
     const params = new URLSearchParams();
     params.append('user_id', userId);
@@ -103,7 +100,7 @@ export async function getAllTransactions(userId: string, filters: TransactionFil
     if (filters.dateTo) params.append('dateTo', filters.dateTo);
     if (filters.name) params.append('name', filters.name);
     if (filters.category) params.append('category', filters.category);
-    // Support frontend 'amount' or backend 'amountMin/Max'
+
     if (filters.amountMin !== undefined) params.append('amountMin', filters.amountMin.toString());
     if (filters.amountMax !== undefined) params.append('amountMax', filters.amountMax.toString());
 
@@ -119,16 +116,14 @@ export async function getCharts(userId: string): Promise<ChartsResponse> {
     return res.charts;
 }
 
-// ADD TRANSACTION
 export async function addTransaction(userId: string, transaction: Omit<Transaction, 'id'>): Promise<Transaction> {
     const res = await request('/transactions/store', {
         method: 'POST',
-        body: JSON.stringify({ ...transaction, user_id: userId }) // Backend handles session but we can pass ID too
+        body: JSON.stringify({ ...transaction, user_id: userId })
     });
     return res.transaction;
 }
 
-// UPDATE TRANSACTION
 export async function updateTransaction(userId: string, transactionId: string, updates: Partial<Transaction>): Promise<Transaction | null> {
     const res = await request(`/transactions/update/${transactionId}`, {
         method: 'PUT',
@@ -137,7 +132,6 @@ export async function updateTransaction(userId: string, transactionId: string, u
     return res.transaction;
 }
 
-// DELETE TRANSACTION
 export async function deleteTransaction(userId: string, transactionId: string): Promise<boolean> {
     try {
         const res = await request(`/transactions/delete/${transactionId}?user_id=${userId}`, {
@@ -149,7 +143,6 @@ export async function deleteTransaction(userId: string, transactionId: string): 
     }
 }
 
-// CATEGORY BREAKDOWN
 export async function getCategoryBreakdown(
     userId: string,
     type: 'income' | 'expense',

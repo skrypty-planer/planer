@@ -107,7 +107,6 @@
       </div>
     </div>
 
-    <!-- Empty state -->
     <div v-else class="card" style="margin-top:1rem;">
       <EmptyState
         icon="📊"
@@ -122,7 +121,6 @@
       </EmptyState>
     </div>
 
-    <!-- Transaction Form Modal -->
     <TransactionFormModal
       v-model="showTransactionModal"
       :mode="modalMode"
@@ -130,7 +128,6 @@
       @submit="handleTransactionSubmit"
     />
 
-    <!-- Delete Confirmation Modal -->
     <Modal
       v-model="showDeleteModal"
       title="Usuń transakcję"
@@ -206,7 +203,6 @@ function resetFilters() {
   filters.amountMax = undefined
   filters.category = ''
   filters.type = ''
-  // Keep sort selection - don't reset it
   loadCategoriesByType()
   load()
 }
@@ -281,7 +277,6 @@ watch(() => filters.type, () => {
   loadCategoriesByType()
 })
 
-// Watch for sort changes to apply immediately
 watch(() => filters.sort, () => {
   load()
 })
@@ -295,7 +290,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Lokalny test styli */
 h3 {
   color: var(--text);
 }

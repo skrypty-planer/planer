@@ -1,6 +1,5 @@
 <template>
   <section>
-    <!-- Średnie dzienne (Top) -->
     <div class="card">
       <div class="chart-header">
         <h3 style="margin:0;">Średnie dzienne: przychody i wydatki</h3>
@@ -24,7 +23,6 @@
       </div>
     </div>
 
-    <!-- Unified Balance Chart -->
     <div class="card" style="margin-top:1rem;">
       <div class="chart-header">
         <h3 style="margin:0;">Bilans</h3>
@@ -58,7 +56,6 @@
       <div class="caption" style="margin-top:2.5rem;">Oś X: {{ xAxisLabel }} • Oś Y: Wartość numeryczna w PLN</div>
     </div>
 
-    <!-- Pie Charts: Category Rankings -->
     <div class="card" style="margin-top:1rem;">
       <div class="chart-header">
         <h3 style="margin:0;">Ranking kategorii</h3>
@@ -138,7 +135,6 @@ const xAxisLabel = computed(() => {
 const currentAverages = computed(() => {
   if (!props.user) return { avgDailyIncome: 0, avgDailyExpense: 0 }
   
-  // Calculate averages based on selected period
   const now = new Date()
   let daysInPeriod = 30
   
@@ -160,7 +156,6 @@ const currentAverages = computed(() => {
       break
   }
   
-  // Simple calculation: divide monthly average by days
   const baseIncome = charts.value.averages.avgDailyIncome
   const baseExpense = charts.value.averages.avgDailyExpense
   
@@ -183,12 +178,9 @@ async function loadPieCharts() {
   incomeCategories.value = await getCategoryBreakdown(props.user.id, 'income', piePeriod.value)
 }
 
-// Watch pie period changes
-
 watch(piePeriod, loadPieCharts)
 
 function toHeight(v: number) {
-  // Dynamic scaling based on max value in current dataset would be better, but fixed for now
   const max = Math.max(...currentChartData.value.data.map(Math.abs), 1000)
   const h = Math.round((v / max) * 180)
   return `${Math.max(2, Math.min(h, 180))}px`
@@ -202,7 +194,7 @@ function shouldShowLabel(index: number, total: number) {
 
 function formatLabel(label: string) {
     if (label.startsWith('Month')) return label.replace('Month ', 'M');
-    if (label.length > 10) return label.slice(5); // Remove year from date
+    if (label.length > 10) return label.slice(5);
     return label;
 }
 
@@ -236,7 +228,7 @@ function formatValue(v: number) {
     display: flex;
     align-items: flex-end;
     gap: 10px;
-    padding-bottom: 20px; /* Space for x-labels */
+    padding-bottom: 20px;
 }
 
 .y-axis {
@@ -305,7 +297,6 @@ function formatValue(v: number) {
   margin-top: 1rem;
 }
 
-/* RWD */
 @media (max-width: 768px) {
     .chart-header {
         flex-direction: column;

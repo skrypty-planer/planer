@@ -75,7 +75,7 @@ defineEmits(['edit-profile', 'logout'])
   display: flex;
   gap: 1rem;
   align-items: center;
-  margin-right: 2rem; /* Add spacing from right edge */
+  margin-right: 2rem;
 }
 .user-tile {
   display: flex;
@@ -85,7 +85,7 @@ defineEmits(['edit-profile', 'logout'])
   border-radius: 10px;
   padding: .5rem .8rem;
   background: var(--card);
-  height: 50px; /* Fixed height for alignment */
+  height: 50px;
 }
 .avatar {
   width: 32px;
@@ -98,7 +98,7 @@ defineEmits(['edit-profile', 'logout'])
   color: var(--text);
 }
 .btn {
-  height: 50px; /* Match user-tile height */
+  height: 50px;
   display: flex;
   align-items: center;
   padding: 0 1.2rem;
