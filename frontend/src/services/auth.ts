@@ -127,6 +127,7 @@ export async function logout(): Promise<void> {
         console.error('Logout failed', e);
     } finally {
         localStorage.removeItem(SESSION_KEY);
+        window.location.reload();
     }
 }
 
