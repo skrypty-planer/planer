@@ -3,7 +3,7 @@
     <div class="container footer__inner">
       <div class="footer-left">
         <span class="material-icons" style="font-size:1rem; vertical-align:middle;">info</span>
-        <span class="caption"> Demo tylko Frontend • Wersja: 1.0.0 </span>
+        <span class="caption"> Wersja: 1.0.0 </span>
       </div>
       <div class="caption footer-right">
         © {{ new Date().getFullYear() }} Budżet Planner
