@@ -108,7 +108,7 @@ class TransactionManager(metaclass=Singleton):
             if category and t['category'] != category: continue
             if amount_min is not None and t['amount'] < float(amount_min): continue
             if amount_max is not None and t['amount'] > float(amount_max): continue
-            if t != _type: continue
+            if t['type'] != _type: continue
             result.append(t)
         
         # Sorting
@@ -129,11 +129,6 @@ class TransactionManager(metaclass=Singleton):
 
     def get_charts(self, user_id):
         self.ensure_user_data(user_id)
-        # Mocking complex logic from api.ts because it generates random data for charts
-        # largely independent of actual transaction history in api.ts (except for breakdown potentially)
-        # But api.ts getCharts actually simply returns randomized data for most charts.
-        # I will replicate the "random within range" logic to match the "simulation" aspect.
-
         def rand(min_val, max_val):
             return random.randint(min_val, max_val)
 
