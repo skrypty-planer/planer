@@ -35,6 +35,7 @@ class CacheManager(metaclass=Singleton):
         
     def get_user(self, user_id):
         users = self.cache.get("users")
+
         if users and user_id in users:
             return users[user_id]
         return None

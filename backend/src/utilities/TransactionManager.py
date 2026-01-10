@@ -21,24 +21,24 @@ DESCRIPTIVE_NAMES_EXPENSE = [
 ]
 
 class TransactionManager(metaclass=Singleton):
-    
+
     def generate_transactions(self, user_id, count=100):
         items = []
         today = datetime.now()
-        
+
         for i in range(count):
             is_income = random.random() < 0.4
             amount = random.randint(50, 5000) if is_income else random.randint(10, 300)
-            
+
             days_ago = random.randint(0, 60)
             tx_date = today - timedelta(days=days_ago)
             date_str = tx_date.strftime("%Y-%m-%d")
-            
+
             category = random.choice(CATEGORIES_INCOME) if is_income else random.choice(CATEGORIES_EXPENSE)
             name = random.choice(DESCRIPTIVE_NAMES_INCOME) if is_income else random.choice(DESCRIPTIVE_NAMES_EXPENSE)
-            
+
             tx_id = f"{user_id}-{i}"
-            
+
             items.append({
                 "id": tx_id,
                 "name": name,
@@ -47,7 +47,7 @@ class TransactionManager(metaclass=Singleton):
                 "type": 'income' if is_income else 'expense',
                 "date": date_str
             })
-        
+
         items.sort(key=lambda x: x['date'], reverse=True)
         return items
 
@@ -57,11 +57,11 @@ class TransactionManager(metaclass=Singleton):
         if not user:
             logger.debug(f"There was no user {user_id}")
             return None
-        
+
         if not user.get('transactions'):
             user['transactions'] = self.generate_transactions(user_id, 150)
             cache.set_user(user_id, user)
-        
+
         return user['transactions']
 
     def list_transactions(self, user_id):
@@ -74,16 +74,16 @@ class TransactionManager(metaclass=Singleton):
         today = datetime.now().strftime("%Y-%m-%d")
         now = datetime.now()
         first_day_month = datetime(now.year, now.month, 1).strftime("%Y-%m-%d")
-        
+
         today_tx = [t for t in transactions if t['date'] == today]
         month_tx = [t for t in transactions if t['date'] >= first_day_month and t['date'] <= today]
-        
+
         income_daily = sum(t['amount'] for t in today_tx if t['type'] == 'income')
         expense_daily = sum(t['amount'] for t in today_tx if t['type'] == 'expense')
-        
+
         income_monthly = sum(t['amount'] for t in month_tx if t['type'] == 'income')
         expense_monthly = sum(t['amount'] for t in month_tx if t['type'] == 'expense')
-        
+
         return {
             "incomeDaily": income_daily,
             "expenseDaily": expense_daily,
@@ -96,10 +96,10 @@ class TransactionManager(metaclass=Singleton):
     def get_recent_transactions(self, user_id):
         transactions = self.ensure_user_data(user_id)
         return transactions[:5]
-    
+
     def filter_transactions(self, user_id, date_from=None, date_to=None, name=None, category=None, amount_min=None, amount_max=None, sort=None, _type=None):
         transactions = self.ensure_user_data(user_id)
-        
+
         result = []
         for t in transactions:
             if date_from and t['date'] < date_from: continue
@@ -124,16 +124,16 @@ class TransactionManager(metaclass=Singleton):
         else:
             # Default desc date
             result.sort(key=lambda x: x['date'], reverse=True)
-            
+
         return result
 
     def get_charts(self, user_id):
         self.ensure_user_data(user_id)
-        # Mocking complex logic from api.ts because it generates random data for charts 
+        # Mocking complex logic from api.ts because it generates random data for charts
         # largely independent of actual transaction history in api.ts (except for breakdown potentially)
         # But api.ts getCharts actually simply returns randomized data for most charts.
         # I will replicate the "random within range" logic to match the "simulation" aspect.
-        
+
         def rand(min_val, max_val):
             return random.randint(min_val, max_val)
 
@@ -149,34 +149,34 @@ class TransactionManager(metaclass=Singleton):
         daily_income = [rand(0, 400) for _ in days]
         daily_expense = [rand(0, 350) for _ in days]
         daily_balance = [i - e for i, e in zip(daily_income, daily_expense)]
-        
+
         weeks = [f"T-{12-i}" for i in range(12)]
         weekly_balance = [rand(-800, 1200) for _ in weeks]
-        
+
         months = [f"M-{12-i}" for i in range(12)]
         monthly_balance = [rand(-2500, 4500) for _ in months]
-        
+
         yearly_labels = [f"Month {i+1}" for i in range(12)]
         yearly_data = [rand(-5000, 8000) for _ in yearly_labels]
-        
+
         half_yearly_labels = [f"Month {i+1}" for i in range(6)]
         half_yearly_data = [rand(-4000, 6000) for _ in half_yearly_labels]
-        
+
         quarterly_labels = [f"Month {i+1}" for i in range(3)]
         quarterly_data = [rand(-3000, 5000) for _ in quarterly_labels]
-        
+
         monthly_labels = days
         monthly_data = [rand(-500, 800) for _ in monthly_labels] # reusing days logic
-        
+
         weekly_labels_unified = last_n_days(7)
         weekly_data_unified = [rand(-200, 400) for _ in weekly_labels_unified]
-        
+
         avg_daily_income = int(sum(daily_income) / len(daily_income))
         avg_daily_expense = int(sum(daily_expense) / len(daily_expense))
-        
+
         ranking = [{"category": c, "amount": rand(300, 2000)} for c in CATEGORIES_EXPENSE]
         ranking.sort(key=lambda x: x['amount'], reverse=True)
-        
+
         return {
             "daily": {"labels": days, "income": daily_income, "expense": daily_expense, "balance": daily_balance},
             "weekly": {"labels": weeks, "balance": weekly_balance},
@@ -196,7 +196,7 @@ class TransactionManager(metaclass=Singleton):
         transactions = self.ensure_user_data(user_id)
         now = datetime.now()
         start_date = now # placeholder
-        
+
         if period == 'yearly':
             start_date = datetime(now.year, 1, 1)
         elif period == 'halfYearly':
@@ -207,18 +207,18 @@ class TransactionManager(metaclass=Singleton):
             start_date = datetime(now.year, now.month, 1)
         elif period == 'weekly':
             start_date = now - timedelta(days=7)
-            
+
         start_date_str = start_date.strftime("%Y-%m-%d")
         end_date_str = now.strftime("%Y-%m-%d")
-        
+
         filtered = [t for t in transactions if t['type'] == type_filter and start_date_str <= t['date'] <= end_date_str]
-        
+
         totals = {}
         for t in filtered:
             totals[t['category']] = totals.get(t['category'], 0) + t['amount']
-            
+
         total_sum = sum(totals.values())
-        
+
         result = []
         for cat, amount in totals.items():
             result.append({
@@ -226,7 +226,7 @@ class TransactionManager(metaclass=Singleton):
                 "amount": amount,
                 "percentage": round((amount / total_sum) * 100) if total_sum > 0 else 0
             })
-            
+
         result.sort(key=lambda x: x['amount'], reverse=True)
         return result
 
@@ -235,10 +235,10 @@ class TransactionManager(metaclass=Singleton):
 
         user = cache.get_user(user_id)
         if not user: raise Exception("User not found")
-        
+
         if 'transactions' not in user:
             user['transactions'] = []
-            
+
         new_tx = {
             "id": f"{user_id}-{int(datetime.now().timestamp() * 1000)}",
             "name": name,
@@ -247,14 +247,14 @@ class TransactionManager(metaclass=Singleton):
             "category": category,
             "date": datetime.now().strftime("%Y-%m-%d")
         }
-        
+
         # Insert at beginning
         user['transactions'].insert(0, new_tx)
-        
+
         # Update balance
         val = amount if transaction_type == 'income' else -amount
         user['funds'] += val
-        
+
         cache.set_user(user_id, user)
         return new_tx
 
@@ -262,18 +262,18 @@ class TransactionManager(metaclass=Singleton):
         cache = CacheManager()
         user = cache.get_user(user_id)
         if not user: return None
-        
+
         transactions = user.get('transactions', [])
         for i, t in enumerate(transactions):
             if t['id'] == transaction_id:
                 old_val = t['amount'] if t['type'] == 'income' else -t['amount']
-                
+
                 updated_tx = {**t, **updates}
                 transactions[i] = updated_tx
-                
+
                 new_val = updated_tx['amount'] if updated_tx['type'] == 'income' else -updated_tx['amount']
                 user['funds'] += (new_val - old_val)
-                
+
                 cache.set_user(user_id, user)
                 return updated_tx
         return None
@@ -282,7 +282,7 @@ class TransactionManager(metaclass=Singleton):
         cache = CacheManager()
         user = cache.get_user(user_id)
         if not user: return False
-        
+
         transactions = user.get('transactions', [])
         for i, t in enumerate(transactions):
             if t['id'] == transaction_id:

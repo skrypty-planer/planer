@@ -91,7 +91,7 @@ def test_register_user(app: Flask, client: FlaskClient, auth: AuthManager, cache
 
 
 
-def test_login_guest(auth: AuthManager, cache: CacheManager):
+def test_login_guest(app: Flask, client: FlaskClient, auth: AuthManager, cache: CacheManager):
     guest_id = auth.login_guest()
     assert guest_id == 'guest-user'
     
