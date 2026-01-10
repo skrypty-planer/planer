@@ -108,7 +108,7 @@ class TransactionManager(metaclass=Singleton):
             if category and t['category'] != category: continue
             if amount_min is not None and t['amount'] < float(amount_min): continue
             if amount_max is not None and t['amount'] > float(amount_max): continue
-            if t['type'] != _type: continue
+            if _type is not None and t['type'] != _type: continue
             result.append(t)
         
         # Sorting
